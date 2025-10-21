@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '../auth/AuthContext'
 import { Link, useNavigate } from 'react-router-dom'
+import AuthLayout from '../components/AuthLayout'
 
 export default function Login() {
   const { login, loading } = useAuth()
@@ -17,15 +18,14 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen grid place-items-center p-6">
-      <form onSubmit={onSubmit} className="w-full max-w-sm space-y-4">
-        <h1 className="text-2xl font-semibold">Login</h1>
-        {error && <p className="text-red-600 text-sm">{error}</p>}
-        <input className="w-full border rounded p-2" placeholder="Email" type="email" value={email} onChange={(e)=>setEmail(e.target.value)} />
-        <input className="w-full border rounded p-2" placeholder="Password" type="password" value={password} onChange={(e)=>setPassword(e.target.value)} />
-        <button disabled={loading} className="w-full bg-black text-white py-2 rounded disabled:opacity-50">{loading? 'Logging in...' : 'Login'}</button>
-        <p className="text-sm">No account? <Link to="/register" className="underline">Register</Link></p>
+    <AuthLayout title="Sign in" subtitle="Welcome back! We're glad to see you again.">
+      <form onSubmit={onSubmit} className="space-y-4">
+        {error && <p className="text-red-200 text-sm">{error}</p>}
+        <input className="w-full rounded-lg bg-white/30 text-white placeholder-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-white/60" placeholder="Email" type="email" value={email} onChange={(e)=>setEmail(e.target.value)} />
+        <input className="w-full rounded-lg bg-white/30 text-white placeholder-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-white/60" placeholder="Password" type="password" value={password} onChange={(e)=>setPassword(e.target.value)} />
+        <button disabled={loading} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-lg font-medium disabled:opacity-50 transition">{loading? 'Signing in...' : 'Sign in'}</button>
+        <p className="text-white/80 text-sm">No account? <Link to="/register" className="underline">Register</Link></p>
       </form>
-    </div>
+    </AuthLayout>
   )
 }
