@@ -270,6 +270,115 @@ Developed by **Gaurav Prajapati** for the Circus of Wonders. Built with ❤️ u
 
 ---
 
+## 🧭 Implementation Guide
+
+### High-level Scope
+- **MVP**
+  - Auth (JWT): register, login, logout
+  - Citizen: create complaint, list my complaints, view detail
+  - Staff: list/assign complaints, update status `OPEN → IN_PROGRESS → RESOLVED`
+  - Admin: list all complaints, basic filters, monthly CSV/PDF export
+  - Map: plot complaints with clustering
+- **V1**
+  - Heatmap, SLA tracking, escalation, email notifications, transparency stats
+
+### Architecture & Folder Structure
+Backend (`server`)
+```text
+server/
+  src/
+    config/            # db, mailer, env
+    middleware/        # auth, error, role-guard, rate-limit
+    models/            # User, Complaint, Notification
+    controllers/       # authController, complaintController, reportController
+    routes/            # /auth, /complaints, /reports, /analytics
+    jobs/              # cron jobs for SLA & escalation
+    utils/             # email, csv/pdf, pagination, logger
+    index.js           # express app bootstrap
+```
+
+Frontend (`client`)
+```text
+client/
+  src/
+    api/               # axios client, hooks (React Query)
+    auth/              # AuthContext, ProtectedRoute
+    components/        # UI components
+    features/
+      auth/            # pages: Login, Register
+      citizen/         # pages: NewComplaint, MyComplaints
+      staff/           # pages: Queue, Assign, Update
+      admin/           # pages: Dashboard, Reports, Heatmap
+      shared/          # common widgets (Table, Filters, Map)
+    pages/             # route shells
+    router/            # route config
+    index.css          # Tailwind
+    main.jsx
+```
+
+### Data Models (MongoDB)
+- **User**: name, email (unique), password (hashed), role: `citizen|staff|admin`, createdAt
+- **Complaint**: title, description, category, location{lat,lng}, photoUrl, status, createdBy, assignedTo, createdAt, updatedAt, slaDeadline, resolutionTime
+- **Notification**: userId, message, type, isRead, createdAt
+- **Indexes**: `users.email` unique; `complaints.createdAt`, `status`, `assignedTo`, `category`, `location.lat/lng`
+
+### API Design (REST)
+- **Auth**
+  - `POST /api/auth/register` {name,email,password,role?} → {token,user}
+  - `POST /api/auth/login` {email,password} → {token,user}
+- **Complaints**
+  - `POST /api/complaints` {title,description,category,location,photoUrl?}
+  - `GET /api/complaints/mine` → user’s complaints (citizen)
+  - `GET /api/complaints` → all (staff/admin), filters: status, category, assignedTo, date range, pagination
+  - `PATCH /api/complaints/:id/status` {status, assignedTo?} (staff)
+- **Reports**
+  - `GET /api/reports/monthly?month=YYYY-MM` → CSV/PDF
+- **Analytics**
+  - `GET /api/analytics/heatmap?from&to` → [{lat,lng,count}]
+
+Standards: Bearer auth header, validation (`zod`/`express-validator`), pagination `?page&limit`, centralized error responses `{message, code, details}`.
+
+### Backend Approach
+- **Auth**: bcrypt hash, JWT issue/verify, `requireAuth`, `requireRole('staff'|'admin')`
+- **Complaints**: citizen create (status=OPEN, compute `slaDeadline`), role-based lists, staff updates; set `resolutionTime` on RESOLVED
+- **Jobs**: cron to detect SLA breaches, mark escalations, enqueue notifications
+- **Notifications**: start with Nodemailer SMTP; adapters later for Twilio/FCM
+- **Reports**: CSV via `fast-csv`; PDF via `pdfkit`/`puppeteer` (optional)
+- **Security**: rate-limit, Helmet, CORS allowlist, validation, upload sanitization
+
+### Frontend Approach
+- **State/Data**: React Query + axios interceptor carrying JWT
+- **Routing**: React Router with public and role-guarded routes
+- **UI**: Tailwind; Leaflet map with clusters/heatmap
+- **Pages**: Login/Register; Citizen (New, My); Staff (Queue/Assign/Update); Admin (Dashboard, Heatmap, Reports)
+- **UX**: forms validation, toasts, skeletons, pagination, debounced search
+
+### Environments & Config
+- `server/.env`: PORT, MONGO_URI, JWT_SECRET, EMAIL_USER, EMAIL_PASS
+- `client/.env`: VITE_API_BASE_URL
+- Build/Run: Backend `npm run dev`, Frontend `npm run dev`
+- MCP: optional `mongodb-mcp-server` for DB exploration (read/write)
+
+### Testing
+- Backend: Jest unit (controllers/utils), Supertest integration
+- Frontend: Vitest unit for components/hooks, Playwright/Cypress E2E
+
+### Observability
+- Logging: morgan (dev), later pino; optional Sentry; optional Prometheus metrics
+
+### Milestones
+- **M1 (MVP)**: Auth, Complaints (create/list/mine/status), Admin list, CSV export, basic UI
+- **M2**: Heatmap + Leaflet, SLA job + email escalation
+- **M3**: PDF export, transparency stats, filters/pagination polish, notifications center
+
+### Concrete Next Steps
+1. Backend: implement `User`, `Complaint` models + indexes; `/auth`, `/complaints` routes/controllers; `requireAuth`/`requireRole`
+2. Frontend: AuthContext + axios; pages for Login/Register, New Complaint, My Complaints, Staff Queue, Admin List
+3. Heatmap + SLA: `/analytics/heatmap` + Leaflet; cron for SLA escalation + email adapter
+4. Reports: CSV first, then PDF
+
+---
+
 ## 🧩 MCP Server (MongoDB) Integration
 
 Use this if you're connecting MongoDB to an MCP client (e.g., Cursor). The password below is URL‑encoded for safety.
