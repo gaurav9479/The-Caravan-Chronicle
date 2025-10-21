@@ -26,12 +26,12 @@ export async function createComplaint(req, res) {
             priority,
             location,
             attachments,
-            createdBy: req.user?._id || null, // if auth not yet implemented, stays null
+            createdBy: req.user?.id || null,
             reporterSnapshot: reporter, // {name, phone, email}
             assignedDepartmentId: department?._id,
             slaDeadline: computeSlaDeadline(slaHours),
             statusHistory: [
-                { from: null, to: 'OPEN', note: 'Complaint created', by: req.user?._id || null },
+                { from: null, to: 'OPEN', note: 'Complaint created', by: req.user?.id || null },
             ],
         });
 
@@ -39,6 +39,15 @@ export async function createComplaint(req, res) {
     } catch (err) {
         console.error('createComplaint error', err);
         return res.status(500).json({ message: 'Failed to create complaint' });
+    }
+}
+
+export async function getMyComplaints(req, res) {
+    try {
+        const list = await Complaint.find({ createdBy: req.user?.id }).sort({ createdAt: -1 }).limit(50);
+        return res.json({ complaints: list });
+    } catch (err) {
+        return res.status(500).json({ message: 'Failed to fetch complaints' });
     }
 }
 
