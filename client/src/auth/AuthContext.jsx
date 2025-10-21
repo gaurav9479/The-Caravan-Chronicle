@@ -7,10 +7,27 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [token, setToken] = useState(() => localStorage.getItem('token'))
   const [loading, setLoading] = useState(false)
+  const [bootstrapping, setBootstrapping] = useState(true)
 
   useEffect(() => {
     if (token) localStorage.setItem('token', token)
     else localStorage.removeItem('token')
+  }, [token])
+
+  useEffect(() => {
+    async function bootstrap() {
+      if (!token) { setBootstrapping(false); return }
+      try {
+        const { data } = await api.get('/api/auth/me')
+        setUser(data.user)
+      } catch (_e) {
+        setUser(null)
+        setToken(null)
+      } finally {
+        setBootstrapping(false)
+      }
+    }
+    bootstrap()
   }, [token])
 
   const login = async (email, password) => {
@@ -46,7 +63,7 @@ export function AuthProvider({ children }) {
     setToken(null)
   }
 
-  const value = useMemo(() => ({ user, token, loading, login, register, logout }), [user, token, loading])
+  const value = useMemo(() => ({ user, token, loading, login, register, logout, bootstrapping }), [user, token, loading, bootstrapping])
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
