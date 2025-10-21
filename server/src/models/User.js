@@ -7,7 +7,13 @@ const UserSchema = new mongoose.Schema(
         email: { type: String, required: true, unique: true, lowercase: true, trim: true },
         password: { type: String, required: true },
         role: { type: String, enum: ['citizen', 'staff', 'admin'], default: 'citizen' },
-        departmentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Department' },
+    departmentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Department' },
+    staff: {
+      title: { type: String },
+      skills: { type: [String], default: [] },
+      shiftStart: { type: String }, // e.g., '09:00'
+      shiftEnd: { type: String },   // e.g., '18:00'
+    },
         profile: {
             avatarUrl: { type: String },
             phone: { type: String },

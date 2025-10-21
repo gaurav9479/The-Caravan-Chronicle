@@ -51,4 +51,31 @@ export async function getMyComplaints(req, res) {
     }
 }
 
+export async function getComplaintDetail(req, res) {
+    try {
+        const c = await Complaint.findById(req.params.id).populate('assignedTo', 'name email').populate('assignedDepartmentId','name');
+        if (!c) return res.status(404).json({ message: 'Not found' });
+        return res.json({ complaint: c });
+    } catch (err) {
+        return res.status(500).json({ message: 'Failed to fetch complaint' });
+    }
+}
+
+export async function updateComplaintStatus(req, res) {
+    try {
+        const { status, note, assignedTo } = req.body;
+        const c = await Complaint.findById(req.params.id);
+        if (!c) return res.status(404).json({ message: 'Not found' });
+        const from = c.status;
+        if (status) c.status = status;
+        if (assignedTo) c.assignedTo = assignedTo;
+        c.statusHistory.push({ from, to: c.status, note, by: req.user?.id });
+        if (c.status === 'RESOLVED') c.resolutionTime = new Date();
+        await c.save();
+        return res.json({ complaint: c });
+    } catch (err) {
+        return res.status(500).json({ message: 'Failed to update complaint' });
+    }
+}
+
 
