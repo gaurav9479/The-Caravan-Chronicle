@@ -145,3 +145,169 @@ You, appointed as the **Grounds Manager**, are responsible for developing a **gr
 | `PATCH` | `/api/complaints/:id/status` | Update complaint status    | ✅ Staff       |
 | `GET`   | `/api/reports/monthly`       | Generate CSV/PDF reports   | ✅ Admin       |
 | `GET`   | `/api/analytics/heatmap`     | Complaint heatmap data     | ✅ Admin       |
+
+---
+
+## 🧭 Installation & Setup
+
+### Prerequisites
+- **Node.js** 18+ and **npm**
+- **Git**
+- **MongoDB** (Atlas account or local MongoDB 6+)
+- **SMTP credentials** for email (e.g., Gmail App Password, SendGrid)
+- (Optional) **Twilio/FCM** credentials for SMS/Push notifications
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/gaurav9479/The-Caravan-Chronicle.git
+cd The-Caravan-Chronicle
+```
+
+### 2. Install Dependencies
+- **Backend**
+```bash
+cd server
+npm install
+```
+- **Frontend**
+```bash
+cd ../client
+npm install
+```
+
+### 3. Configure Environment Variables
+Create a `.env` file inside `server`:
+```env
+PORT=5000
+MONGO_URI=mongodb+srv://<your-uri>
+JWT_SECRET=<your-secret>
+EMAIL_USER=<your-email>
+EMAIL_PASS=<your-password>
+```
+
+Optional (if frontend needs to call a custom API base URL): create `client/.env`:
+```env
+VITE_API_BASE_URL=http://localhost:5000
+```
+
+### 4. Database Setup (MongoDB)
+- **Option A: MongoDB Atlas (recommended for dev/test)**
+  - Create a Project and a free Cluster
+  - Create a Database User and note the password
+  - Network Access: allow your IP (or `0.0.0.0/0` for development only)
+  - Copy the connection string and paste it into `MONGO_URI`
+- **Option B: Local MongoDB**
+  - Install MongoDB Community Edition and start the service
+  - Use `mongodb://127.0.0.1:27017/caravan_chronicle` as `MONGO_URI`
+
+Collections are created automatically by Mongoose at runtime. For better query performance, create these indexes (in `mongosh` after selecting your database):
+```js
+// Users: unique email
+db.users.createIndex({ email: 1 }, { unique: true });
+
+// Complaints: common query paths
+db.complaints.createIndex({ createdAt: -1 });
+db.complaints.createIndex({ status: 1 });
+db.complaints.createIndex({ assignedTo: 1 });
+db.complaints.createIndex({ category: 1 });
+db.complaints.createIndex({ "location.lat": 1, "location.lng": 1 });
+```
+
+Optional: seed an initial admin (after backend is running):
+```bash
+curl -X POST http://localhost:5000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Admin","email":"admin@example.com","password":"ChangeMe123!","role":"admin"}'
+```
+
+### 5. Run the Project
+- **Backend**
+```bash
+cd server
+npm start
+```
+- **Frontend**
+```bash
+cd ../client
+npm run dev
+```
+
+### 6. Access the App
+Open your browser at: `http://localhost:5173`
+
+### 7. Troubleshooting
+- **Mongo connection error**: verify `MONGO_URI`, IP allowlist (Atlas), and network connectivity
+- **JWT errors**: ensure `JWT_SECRET` is set and consistent across runs
+- **Email failures**: use app passwords or provider-specific SMTP creds; avoid plain Gmail passwords
+- **Port in use**: change `PORT` in `server/.env` or stop the conflicting process
+
+---
+
+## 📊 Reports & Visualization
+- **Monthly Reports**: Export complaint data as CSV/PDF
+- **Heatmap Dashboard**: Interactive map showing complaint hotspots
+- **Transparency Stats**: Public metrics of pending vs resolved cases
+
+## 🧩 Future Enhancements
+- **Voice-based complaint submission**
+- **AI-driven auto categorization**
+- **Offline-first mobile PWA**
+- **Gamified citizen participation system**
+- **Predictive analytics for recurring issues**
+
+## 🔒 Roles & Access
+| Role | Access |
+| --- | --- |
+| **Citizen** | File & track complaints |
+| **Staff** | Assign, update, resolve complaints |
+| **Admin** | Manage users, oversee SLA & reports |
+
+## 🧾 License
+This project is open source under the **MIT License**.
+
+## 🙌 Credits
+Developed by **Gaurav Prajapati** for the Circus of Wonders. Built with ❤️ using **React**, **Node.js**, and **MongoDB**.
+
+---
+
+## 🧩 MCP Server (MongoDB) Integration
+
+Use this if you're connecting MongoDB to an MCP client (e.g., Cursor). The password below is URL‑encoded for safety.
+
+### Password encoding
+Raw password: `Gaurav@2005` → URL‑encoded: `Gaurav%402005`
+
+### Connection string (read‑write)
+```text
+mongodb+srv://gauravsprajapati:Gaurav%402005@caravanchroniclecluster.xu5j6lk.mongodb.net/caravan_chronicle
+```
+
+### Start MCP server (read‑write)
+Run in your terminal (omit `--readOnly` for write access):
+```bash
+npx -y mongodb-mcp-server \
+  --connectionString "mongodb+srv://gauravsprajapati:Gaurav%402005@caravanchroniclecluster.xu5j6lk.mongodb.net/caravan_chronicle"
+```
+
+### Optional MCP JSON config
+```json
+{
+  "mcpServers": {
+    "MongoDB": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mongodb-mcp-server",
+        "--connectionString",
+        "mongodb+srv://gauravsprajapati:Gaurav%402005@caravanchroniclecluster.xu5j6lk.mongodb.net/caravan_chronicle"
+      ]
+    }
+  }
+}
+```
+
+### Backend `.env` example
+Update `server/.env` to use the same DB (read‑write):
+```env
+MONGO_URI=mongodb+srv://gauravsprajapati:Gaurav%402005@caravanchroniclecluster.xu5j6lk.mongodb.net/caravan_chronicle
+```
