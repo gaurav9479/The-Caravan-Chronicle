@@ -1,10 +1,11 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { createBrowserRouter, RouterProvider, Link } from 'react-router-dom'
 import Login from '../screens/Login'
 import Register from '../screens/Register'
 import Dashboard from '../screens/Dashboard'
 import AdminDashboard from '../screens/AdminDashboard'
 import StaffDashboard from '../screens/StaffDashboard'
 import CitizenDashboard from '../screens/CitizenDashboard'
+import NewComplaint from '../screens/NewComplaint'
 import ProtectedRoute from '../auth/ProtectedRoute'
 import { useAuth } from '../auth/AuthContext'
 
@@ -13,7 +14,7 @@ function RoleDashboard() {
   if (!user) return null
   if (user.role === 'admin') return <AdminDashboard />
   if (user.role === 'staff') return <StaffDashboard />
-  return <CitizenDashboard />
+  return <div className="space-y-4"><div className="flex justify-end p-6"><Link to="/complaints/new" className="px-4 py-2 rounded bg-emerald-600 text-white">New Complaint</Link></div><CitizenDashboard /></div>
 }
 
 const router = createBrowserRouter([
@@ -27,6 +28,14 @@ const router = createBrowserRouter([
       </ProtectedRoute>
     ),
   },
+  {
+    path: '/complaints/new',
+    element: (
+      <ProtectedRoute roles={['citizen','admin','staff']}>
+        <NewComplaint />
+      </ProtectedRoute>
+    ),
+  }
 ])
 
 export default function AppRouter() {
