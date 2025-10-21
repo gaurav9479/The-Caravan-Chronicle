@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import api from '../api/client'
 import KpiCard from '../components/KpiCard'
+import ProfileCard from '../components/ProfileCard'
 
 export default function AdminDashboard() {
   const [data, setData] = useState({ total: 0, byStatus: {}, overdue: 0, categories: [] })
@@ -27,6 +28,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="p-6 space-y-6">
+      <ProfileCard />
       <h1 className="text-2xl font-semibold">Admin Dashboard</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard label="Total" value={data.total} />
