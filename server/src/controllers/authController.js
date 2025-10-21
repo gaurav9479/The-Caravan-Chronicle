@@ -44,16 +44,16 @@ export async function login(req, res) {
 }
 
 export async function me(req, res) {
-  try {
-    // req.user is set by requireAuth
-    const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
-    const user = await User.findById(userId).select('_id name email role');
-    if (!user) return res.status(404).json({ message: 'User not found' });
-    return res.json({ user: { id: user._id, name: user.name, email: user.email, role: user.role } });
-  } catch (err) {
-    return res.status(500).json({ message: 'Failed to fetch current user', details: err.message });
-  }
+    try {
+        // req.user is set by requireAuth
+        const userId = req.user?.id;
+        if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+        const user = await User.findById(userId).select('_id name email role');
+        if (!user) return res.status(404).json({ message: 'User not found' });
+        return res.json({ user: { id: user._id, name: user.name, email: user.email, role: user.role } });
+    } catch (err) {
+        return res.status(500).json({ message: 'Failed to fetch current user', details: err.message });
+    }
 }
 
 

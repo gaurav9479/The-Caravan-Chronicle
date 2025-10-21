@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import mongoose from 'mongoose';
 import complaintRoutes from './routes/complaintRoutes.js';
 import authRoutes from './routes/authRoutes.js';
+import analyticsRoutes from './routes/analyticsRoutes.js';
 
 const app = express();
 
@@ -64,6 +65,7 @@ app.get('/health', (_req, res) => res.json({ ok: true }));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/complaints', complaintRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 const port = process.env.PORT || 5000;
 app.listen(port, () => console.log(`API listening on :${port}`));
