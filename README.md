@@ -44,28 +44,27 @@ You, appointed as the **Grounds Manager**, are responsible for developing a **gr
 ---
 
 ## 🏗️ System Architecture
-+-----------------------------+
-| Frontend (React) |
-| - Citizen Portal |
-| - Staff/Admin Dashboard |
-| - Map Visualization (Leaflet) |
-+-------------+---------------+
-|
-↓
-+-------------+---------------+
-| Backend (Node.js + Express) |
-| - RESTful APIs for Auth, Complaints, Reports |
-| - JWT Authentication Middleware |
-| - SLA Tracking & Escalation Jobs (Cron) |
-+-------------+---------------+
-|
-↓
-+-------------+---------------+
-| MongoDB Database |
-| - Users Collection |
-| - Complaints Collection |
-| - Notifications Collection |
-+-----------------------------+
+
+
+|                 Frontend (React)                  |
+|---------------------------------------------------|
+|  - Citizen Portal                                 |
+|  - Staff/Admin Dashboard                          |
+|  - Map Visualization (Leaflet)                    |
+
+
+|           Backend (Node.js + Express)             |
+|---------------------------------------------------|
+|  - RESTful APIs for Auth, Complaints, Reports     |
+|  - JWT Authentication Middleware                  |
+|  - SLA Tracking & Escalation Jobs (Cron)          |
+
+
+|                  MongoDB Database                 |
+|---------------------------------------------------|
+|  - Users Collection                               |
+|  - Complaints Collection                          |
+|  - Notifications Collection                       |
 
 ---
 
