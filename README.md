@@ -83,11 +83,14 @@ You, appointed as the **Grounds Manager**, are responsible for developing a **gr
 ---
 
 ### ⚙️ Advanced Features
-1. **Heatmap Visualization** — Interactive map displaying complaint density by location.  
-2. **SLA Tracking** — Monitor how long complaints stay unresolved and highlight overdue issues.  
-3. **Escalation System** — Automatically escalate unresolved complaints after SLA breach.  
-4. **Public Transparency Portal** — Show live statistics (resolved vs pending, average resolution time).  
+1. **Heatmap Visualization** — Interactive map displaying complaint density by location.
+2. **SLA Tracking** — Monitor how long complaints stay unresolved and highlight overdue issues.
+3. **Escalation System** — Automatically escalate unresolved complaints after SLA breach.
+4. **Public Transparency Portal** — Show live statistics (resolved vs pending, average resolution time).
 5. **Notifications** — SMS/email/push alerts for status updates and overdue reminders.
+6. **Staff Performance Tracking** — Work area management, contact info, and performance analytics.
+7. **Rating & Review System** — Citizens rate staff (1-5 stars) after resolution with detailed feedback.
+8. **Advanced Filtering** — Filter complaints/reviews by status, dates, department, assignee across all views.
 
 ---
 
@@ -101,6 +104,29 @@ You, appointed as the **Grounds Manager**, are responsible for developing a **gr
   email: String,
   password: String, // hashed
   role: { type: String, enum: ['citizen', 'staff', 'admin'], default: 'citizen' },
+  departmentId: { type: ObjectId, ref: 'Department' },
+  staff: {
+    title: String,
+    skills: [String],
+    shiftStart: String,
+    shiftEnd: String,
+    workArea: {
+      city: String,
+      zones: [String],
+      location: { lat: Number, lng: Number }
+    },
+    contactPhone: String,
+    contactEmail: String
+  },
+  ratings: {
+    average: { type: Number, default: 0 },
+    count: { type: Number, default: 0 }
+  },
+  profile: {
+    avatarUrl: String,
+    phone: String,
+    address: { line1: String, line2: String, city: String, state: String, zip: String }
+  },
   createdAt: Date
 }
 ```
@@ -135,16 +161,41 @@ You, appointed as the **Grounds Manager**, are responsible for developing a **gr
 }
 ```
 
+##🗂️ Review Model
+```js
+{
+  complaintId: { type: ObjectId, ref: 'Complaint' },
+  staffId: { type: ObjectId, ref: 'User' },
+  citizenId: { type: ObjectId, ref: 'User' },
+  rating: { type: Number, min: 1, max: 5 },
+  comment: String,
+  resolutionQuality: { type: Number, min: 1, max: 5 },
+  timeliness: { type: Number, min: 1, max: 5 },
+  communication: { type: Number, min: 1, max: 5 },
+  createdAt: Date
+}
+```
+
 | Method  | Endpoint                     | Description                | Auth          |
-| ------- | ---------------------------- | -------------------------- | ------------- |
-| `POST`  | `/api/auth/register`         | Register a new user        | ❌             |
-| `POST`  | `/api/auth/login`            | Login and get JWT          | ❌             |
-| `POST`  | `/api/complaints`            | Submit a complaint         | ✅ Citizen     |
-| `GET`   | `/api/complaints`            | View all complaints        | ✅ Staff/Admin |
-| `GET`   | `/api/complaints/mine`       | View user’s own complaints | ✅ Citizen     |
-| `PATCH` | `/api/complaints/:id/status` | Update complaint status    | ✅ Staff       |
-| `GET`   | `/api/reports/monthly`       | Generate CSV/PDF reports   | ✅ Admin       |
-| `GET`   | `/api/analytics/heatmap`     | Complaint heatmap data     | ✅ Admin       |
+ | ------- | ---------------------------- | -------------------------- | ------------- |
+ | `POST`  | `/api/auth/register`         | Register a new user        | ❌             |
+ | `POST`  | `/api/auth/login`            | Login and get JWT          | ❌             |
+ | `GET`   | `/api/auth/me`               | Get current user profile   | ✅ All         |
+ | `POST`  | `/api/complaints`            | Submit a complaint         | ✅ Citizen     |
+ | `GET`   | `/api/complaints`            | View complaints with filters| ✅ Staff/Admin |
+ | `GET`   | `/api/complaints/mine`       | View user’s own complaints | ✅ Citizen     |
+ | `GET`   | `/api/complaints/staff/:id`  | View staff's assigned complaints | ✅ Staff/Admin |
+ | `GET`   | `/api/complaints/:id`        | View complaint detail      | ✅ All         |
+ | `PATCH` | `/api/complaints/:id/status` | Update complaint status    | ✅ Staff/Admin |
+ | `GET`   | `/api/reports/monthly`       | Generate CSV/PDF reports   | ✅ Admin       |
+ | `GET`   | `/api/analytics/heatmap`     | Complaint heatmap data     | ✅ Admin       |
+ | `GET`   | `/api/analytics/summary`     | Analytics summary          | ✅ Admin       |
+ | `GET`   | `/api/analytics/categories`  | Category breakdown         | ✅ Admin       |
+ | `GET`   | `/api/departments`           | List all departments       | ✅ All         |
+ | `GET`   | `/api/users`                 | List users (staff/admin)   | ✅ Staff/Admin |
+ | `GET`   | `/api/users/:id`             | View user profile          | ✅ All         |
+ | `POST`  | `/api/reviews`               | Submit staff review        | ✅ Citizen     |
+ | `GET`   | `/api/reviews/staff/:id`     | View staff reviews         | ✅ Staff/Admin |
 
 ---
 
@@ -378,6 +429,46 @@ Standards: Bearer auth header, validation (`zod`/`express-validator`), paginatio
 4. Reports: CSV first, then PDF
 
 ---
+
+## 🚀 Staff Work Tracking & Ratings
+
+### Features
+- **Staff Profile Management**: Work area, contact info, skills, and performance tracking
+- **Complaint Assignment**: Auto-assign complaints to departments based on category
+- **Progress Tracking**: Full audit trail of status changes with timestamps and notes
+- **Rating & Review System**: Citizens rate staff (1-5 stars) after complaint resolution
+- **Performance Analytics**: Average ratings, review counts, and work completion tracking
+- **Filtering & Search**: Filter complaints/reviews by status, dates, department, assignee
+
+### Staff Onboarding Data
+- **Work Area**: City, zones (comma-separated), location coordinates
+- **Contact**: Phone, email for citizen communication
+- **Skills**: Technical expertise (comma-separated)
+- **Department**: Auto-assigned or selected during registration
+
+### API Endpoints for Tracking
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| `POST` | `/api/reviews` | Submit rating/review for resolved complaint | ✅ Citizen |
+| `GET` | `/api/reviews/staff/:id?from&to` | Get staff reviews with date filtering | ✅ Staff/Admin |
+| `GET` | `/api/complaints` | List complaints with filters (status, dept, assignee, dates) | ✅ Staff/Admin |
+| `GET` | `/api/complaints/staff/:id?status&from&to` | Get complaints assigned to specific staff | ✅ Staff/Admin |
+| `GET` | `/api/complaints/:id` | Complaint detail with full timeline | ✅ All |
+| `PATCH` | `/api/complaints/:id/status` | Update complaint status (staff/admin only) | ✅ Staff/Admin |
+| `GET` | `/api/users/:id` | User profile with ratings and work area | ✅ All |
+
+### Frontend Features
+- **Staff Profile Page** (`/staff/:id`): Work area, contact, ratings, reviews, and assigned complaints
+- **Complaint Detail** (`/complaints/:id`): Timeline, status history, rating submission
+- **Admin Dashboard**: Staff management table with performance metrics
+- **Filtering UI**: Date ranges, status filters, department filters on all list views
+
+### Rating System
+- Citizens rate staff 1-5 stars after resolution
+- Detailed feedback: quality, timeliness, communication scores
+- Auto-calculates average rating for staff profiles
+- Reviews include complaint context and citizen anonymity
 
 ## 📝 Data Collection & Forms
 
