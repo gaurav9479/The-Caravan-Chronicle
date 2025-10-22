@@ -3,10 +3,10 @@ export default function AuthLayout({ title, subtitle, children, right }) {
     <div className="min-h-screen h-screen overflow-y-auto overflow-x-hidden bg-gradient-to-br from-emerald-400 via-green-500 to-emerald-700 flex flex-col items-stretch justify-start md:items-center md:justify-center p-4 md:p-6">
       <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-lg md:min-h-[70vh]">
         {/* Left: Form */}
-        <div className="bg-white/20 backdrop-blur-md p-6 md:p-10 text-white order-1">
-          <h1 className="text-3xl font-bold mb-2 drop-shadow">{title}</h1>
-          {subtitle && <p className="text-white/85 mb-6">{subtitle}</p>}
-          <div className="bg-white/30 rounded-xl p-4 md:p-6 shadow-inner">
+        <div className="bg-white/25 backdrop-blur-md p-6 md:p-10 text-white order-1">
+          <h1 className="text-3xl font-bold mb-2 drop-shadow-lg">{title}</h1>
+          {subtitle && <p className="text-white/90 mb-6 drop-shadow">{subtitle}</p>}
+          <div className="bg-white/40 rounded-xl p-4 md:p-6 shadow-lg">
             {children}
           </div>
         </div>
