@@ -13,6 +13,7 @@ export default function NewComplaint() {
   const [lat, setLat] = useState(28.6139)
   const [lng, setLng] = useState(77.2090)
   const [departments, setDepartments] = useState([])
+  const [selectedDeptId, setSelectedDeptId] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
@@ -25,6 +26,16 @@ export default function NewComplaint() {
       } catch {}
     })()
   }, [])
+
+  const matchingDepts = departments.filter(d => d.categoriesHandled?.includes(category))
+
+  useEffect(() => {
+    if (matchingDepts.length === 1) {
+      setSelectedDeptId(matchingDepts[0]._id)
+    } else if (matchingDepts.length > 1 && !matchingDepts.find(d => d._id === selectedDeptId)) {
+      setSelectedDeptId('')
+    }
+  }, [category, matchingDepts.length])
 
   const onSubmit = async (e) => {
     e.preventDefault()
@@ -41,6 +52,7 @@ export default function NewComplaint() {
           lng: lng ? Number(lng) : undefined,
         },
       }
+      if (selectedDeptId) payload.assignedDepartmentId = selectedDeptId
       await api.post('/api/complaints', payload)
       navigate('/')
     } catch (e) {
@@ -57,7 +69,7 @@ export default function NewComplaint() {
       <form onSubmit={onSubmit} className="space-y-4">
         <input className="w-full border rounded p-2" placeholder="Title" value={title} onChange={e=>setTitle(e.target.value)} />
         <textarea className="w-full border rounded p-2" rows={4} placeholder="Description" value={description} onChange={e=>setDescription(e.target.value)} />
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <select className="border rounded p-2" value={category} onChange={e=>setCategory(e.target.value)}>
             {categories.map(c=> <option key={c} value={c}>{c}</option>)}
           </select>
@@ -66,7 +78,14 @@ export default function NewComplaint() {
             <option value="MEDIUM">Medium</option>
             <option value="HIGH">High</option>
           </select>
-          <input className="border rounded p-2" placeholder="Department (auto)" value={(departments.find(d=>d.categoriesHandled?.includes(category))?.name)||''} readOnly />
+        </div>
+        <div>
+          <label className="block text-sm mb-1">Department {matchingDepts.length === 1 ? '(auto-selected)' : ''}</label>
+          <select className="w-full border rounded p-2" value={selectedDeptId} onChange={e=>setSelectedDeptId(e.target.value)} disabled={matchingDepts.length <= 1}>
+            {matchingDepts.length === 0 && <option value="">No departments for this category</option>}
+            {matchingDepts.length > 1 && <option value="">Select a department</option>}
+            {matchingDepts.map(d => <option key={d._id} value={d._id}>{d.name}</option>)}
+          </select>
         </div>
         <div>
           <label className="block text-sm mb-1">Location (click on map or enter coordinates)</label>
