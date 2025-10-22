@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import api from '../api/client'
 import { useNavigate } from 'react-router-dom'
+import MapPicker from '../components/MapPicker'
 
 const categories = ['Road Damage','Water Leakage','Garbage','Other']
 
@@ -9,8 +10,8 @@ export default function NewComplaint() {
   const [description, setDescription] = useState('')
   const [category, setCategory] = useState(categories[0])
   const [priority, setPriority] = useState('LOW')
-  const [lat, setLat] = useState('')
-  const [lng, setLng] = useState('')
+  const [lat, setLat] = useState(28.6139)
+  const [lng, setLng] = useState(77.2090)
   const [departments, setDepartments] = useState([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -67,9 +68,13 @@ export default function NewComplaint() {
           </select>
           <input className="border rounded p-2" placeholder="Department (auto)" value={(departments.find(d=>d.categoriesHandled?.includes(category))?.name)||''} readOnly />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <input className="border rounded p-2" placeholder="Latitude" value={lat} onChange={e=>setLat(e.target.value)} />
-          <input className="border rounded p-2" placeholder="Longitude" value={lng} onChange={e=>setLng(e.target.value)} />
+        <div>
+          <label className="block text-sm mb-1">Location (click on map or enter coordinates)</label>
+          <MapPicker lat={lat} lng={lng} onLocationChange={(newLat, newLng) => { setLat(newLat); setLng(newLng); }} />
+          <div className="grid grid-cols-2 gap-2 mt-2">
+            <input className="border rounded p-2 text-sm" placeholder="Latitude" value={lat} onChange={e=>setLat(Number(e.target.value))} />
+            <input className="border rounded p-2 text-sm" placeholder="Longitude" value={lng} onChange={e=>setLng(Number(e.target.value))} />
+          </div>
         </div>
         <button disabled={loading} className="px-4 py-2 rounded bg-emerald-600 text-white disabled:opacity-50">{loading? 'Submitting...' : 'Submit'}</button>
       </form>
