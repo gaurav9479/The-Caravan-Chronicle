@@ -60,6 +60,61 @@ export async function getMyComplaints(req, res) {
     }
 }
 
+export async function getComplaintsByStaff(req, res) {
+    try {
+        const { staffId } = req.params;
+        const { status, from, to } = req.query;
+
+        let filter = { assignedTo: staffId };
+        if (status) filter.status = status;
+        if (from || to) {
+          filter.createdAt = {};
+          if (from) filter.createdAt.$gte = new Date(from);
+          if (to) filter.createdAt.$lte = new Date(to);
+        }
+
+        const list = await Complaint.find(filter).sort({ createdAt: -1 }).limit(50);
+        return res.json({ complaints: list });
+    } catch (err) {
+        return res.status(500).json({ message: 'Failed to fetch complaints' });
+    }
+}
+
+export async function getAllComplaints(req, res) {
+    try {
+        const { status, departmentId, assignedTo, from, to, category, page = 1, limit = 20 } = req.query;
+
+        let filter = {};
+        if (status) filter.status = status;
+        if (departmentId) filter.assignedDepartmentId = departmentId;
+        if (assignedTo) filter.assignedTo = assignedTo;
+        if (category) filter.category = category;
+        if (from || to) {
+          filter.createdAt = {};
+          if (from) filter.createdAt.$gte = new Date(from);
+          if (to) filter.createdAt.$lte = new Date(to);
+        }
+
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+        const [complaints, total] = await Promise.all([
+          Complaint.find(filter)
+            .populate('assignedTo', 'name email')
+            .populate('assignedDepartmentId', 'name')
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(parseInt(limit)),
+          Complaint.countDocuments(filter)
+        ]);
+
+        return res.json({
+          complaints,
+          pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / limit) }
+        });
+    } catch (err) {
+        return res.status(500).json({ message: 'Failed to fetch complaints', details: err.message });
+    }
+}
+
 export async function getComplaintDetail(req, res) {
     try {
         const c = await Complaint.findById(req.params.id).populate('assignedTo', 'name email').populate('assignedDepartmentId', 'name');

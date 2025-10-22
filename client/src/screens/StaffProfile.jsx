@@ -6,24 +6,29 @@ export default function StaffProfile() {
   const { id } = useParams()
   const [staff, setStaff] = useState(null)
   const [reviews, setReviews] = useState([])
+  const [complaints, setComplaints] = useState([])
   const [loading, setLoading] = useState(true)
+  const [reviewFilter, setReviewFilter] = useState({ from: '', to: '' })
+  const [complaintFilter, setComplaintFilter] = useState({ status: '', from: '', to: '' })
 
   useEffect(() => {
     (async () => {
       try {
-        const [u, r] = await Promise.all([
+        const [u, r, c] = await Promise.all([
           api.get(`/api/users/${id}`),
-          api.get(`/api/reviews/staff/${id}`),
+          api.get(`/api/reviews/staff/${id}?${new URLSearchParams(reviewFilter)}`),
+          api.get(`/api/complaints/staff/${id}?${new URLSearchParams(complaintFilter)}`),
         ])
         setStaff(u.data.user)
         setReviews(r.data.reviews || [])
+        setComplaints(c.data.complaints || [])
       } catch {
         setStaff(null)
       } finally {
         setLoading(false)
       }
     })()
-  }, [id])
+  }, [id, reviewFilter, complaintFilter])
 
   if (loading) return <div className="p-6">Loading…</div>
   if (!staff) return <div className="p-6">Staff not found</div>
@@ -43,7 +48,13 @@ export default function StaffProfile() {
       </div>
 
       <div className="bg-white rounded-xl p-4 shadow">
-        <h2 className="text-lg font-medium mb-3">Reviews</h2>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-medium">Reviews ({reviews.length})</h2>
+          <div className="flex gap-2">
+            <input type="date" value={reviewFilter.from} onChange={e=>setReviewFilter({...reviewFilter, from: e.target.value})} className="border rounded p-2 text-sm" placeholder="From" />
+            <input type="date" value={reviewFilter.to} onChange={e=>setReviewFilter({...reviewFilter, to: e.target.value})} className="border rounded p-2 text-sm" placeholder="To" />
+          </div>
+        </div>
         {reviews.length === 0 ? (
           <p className="text-fade">No reviews yet.</p>
         ) : (
@@ -61,6 +72,48 @@ export default function StaffProfile() {
                 <div className="text-xs text-fade mt-1">{new Date(r.createdAt).toLocaleDateString()}</div>
               </div>
             ))}
+          </div>
+        )}
+      </div>
+
+      <div className="bg-white rounded-xl p-4 shadow">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-medium">Work Done ({complaints.length})</h2>
+          <div className="flex gap-2">
+            <select value={complaintFilter.status} onChange={e=>setComplaintFilter({...complaintFilter, status: e.target.value})} className="border rounded p-2 text-sm">
+              <option value="">All Status</option>
+              <option value="OPEN">Open</option>
+              <option value="IN_PROGRESS">In Progress</option>
+              <option value="RESOLVED">Resolved</option>
+            </select>
+            <input type="date" value={complaintFilter.from} onChange={e=>setComplaintFilter({...complaintFilter, from: e.target.value})} className="border rounded p-2 text-sm" placeholder="From" />
+            <input type="date" value={complaintFilter.to} onChange={e=>setComplaintFilter({...complaintFilter, to: e.target.value})} className="border rounded p-2 text-sm" placeholder="To" />
+          </div>
+        </div>
+        {complaints.length === 0 ? (
+          <p className="text-fade">No complaints assigned yet.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="text-fade border-b">
+                  <th className="py-2">Title</th>
+                  <th className="py-2">Category</th>
+                  <th className="py-2">Status</th>
+                  <th className="py-2">Created</th>
+                </tr>
+              </thead>
+              <tbody>
+                {complaints.map(c => (
+                  <tr key={c._id} className="border-t hover:bg-gray-50">
+                    <td className="py-2">{c.title}</td>
+                    <td className="py-2">{c.category}</td>
+                    <td className="py-2">{c.status}</td>
+                    <td className="py-2">{new Date(c.createdAt).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>

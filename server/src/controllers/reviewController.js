@@ -46,7 +46,16 @@ export async function submitReview(req, res) {
 export async function getStaffReviews(req, res) {
   try {
     const { staffId } = req.params;
-    const reviews = await Review.find({ staffId }).populate('citizenId', 'name').populate('complaintId', 'title category').sort({ createdAt: -1 });
+    const { from, to } = req.query;
+
+    let filter = { staffId };
+    if (from || to) {
+      filter.createdAt = {};
+      if (from) filter.createdAt.$gte = new Date(from);
+      if (to) filter.createdAt.$lte = new Date(to);
+    }
+
+    const reviews = await Review.find(filter).populate('citizenId', 'name').populate('complaintId', 'title category').sort({ createdAt: -1 });
     return res.json({ reviews });
   } catch (e) {
     return res.status(500).json({ message: 'Failed to fetch reviews' });
