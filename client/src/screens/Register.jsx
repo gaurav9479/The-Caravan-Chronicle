@@ -18,6 +18,17 @@ export default function Register() {
   const [error, setError] = useState('')
   const navigate = useNavigate()
 
+  const validatePhone = (value) => {
+    if (!value) return { valid: null, msg: '' }
+    const cleaned = value.replace(/\D/g, '')
+    if (cleaned.length < 10) return { valid: false, msg: 'Min 10 digits' }
+    if (cleaned.length > 15) return { valid: false, msg: 'Max 15 digits' }
+    if (/[a-zA-Z]/.test(value)) return { valid: false, msg: 'Numbers only' }
+    return { valid: true, msg: 'Valid' }
+  }
+
+  const phoneValidation = validatePhone(phone)
+
   useEffect(() => {
     if (role === 'staff') {
       (async () => {
@@ -49,7 +60,14 @@ export default function Register() {
         <input className="w-full rounded-lg bg-white/30 text-white placeholder-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-white/60" placeholder="Name" value={name} onChange={(e)=>setName(e.target.value)} />
         <input className="w-full rounded-lg bg-white/30 text-white placeholder-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-white/60" placeholder="Email" type="email" value={email} onChange={(e)=>setEmail(e.target.value)} />
         <input className="w-full rounded-lg bg-white/30 text-white placeholder-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-white/60" placeholder="Password" type="password" value={password} onChange={(e)=>setPassword(e.target.value)} />
-        <input className="w-full rounded-lg bg-white/30 text-white placeholder-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-white/60" placeholder="Phone (optional)" value={phone} onChange={(e)=>setPhone(e.target.value)} />
+        <div className="relative">
+          <input className="w-full rounded-lg bg-white/30 text-white placeholder-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-white/60" placeholder="Phone (optional)" value={phone} onChange={(e)=>setPhone(e.target.value)} />
+          {phone && (
+            <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium ${phoneValidation.valid === true ? 'text-green-300' : phoneValidation.valid === false ? 'text-red-300' : 'text-white/60'}`}>
+              {phoneValidation.msg}
+            </span>
+          )}
+        </div>
         <select className="w-full rounded-lg bg-white/30 text-white px-4 py-3 outline-none focus:ring-2 focus:ring-white/60" value={role} onChange={(e)=>setRole(e.target.value)}>
           <option className="text-black" value="citizen">Citizen</option>
           <option className="text-black" value="staff">Staff</option>
