@@ -379,6 +379,51 @@ Standards: Bearer auth header, validation (`zod`/`express-validator`), paginatio
 
 ---
 
+## 📝 Data Collection & Forms
+
+### Onboarding Fields (by role)
+- **Citizen**
+  - Name; Email (verify); Password
+  - Phone (optional, for OTP/alerts)
+  - Default location/area (optional)
+  - Notification preference (email/SMS/push)
+  - Accessibility needs (optional)
+- **Staff**
+  - Name; Email (verify); Password
+  - Phone (work)
+  - Department (select)
+  - Title/role (e.g., Field Engineer)
+  - Skills/tags (e.g., paving, plumbing)
+  - Shift hours (start, end)
+  - Notification preference
+- **Admin**
+  - Name; Email (verify); Password
+  - Scope (global or department-level)
+  - Contact phone (optional)
+
+### Complaint Submission (Citizen)
+- **Required**: Title, Description, Category, Location (map pin or searched address → store lat/lng and formatted address)
+- **Optional**: Priority (LOW/MEDIUM/HIGH), Photos/attachments, Landmark/notes, Consent to share anonymized data
+
+### Assignment & Workflow (Staff/Admin)
+- Department and Assignee (staff list filtered by department)
+- Status update: `OPEN → IN_PROGRESS → RESOLVED`
+- Note on status change
+- SLA override (admin only, optional)
+
+### Analytics & Notifications
+- Time range preferences (e.g., weekly digest)
+- Channels (email/SMS/push)
+- Escalation contacts (admin/staff leads)
+
+### Data Quality & Validation
+- Email/phone verification (OTP/email link)
+- Address validation via geocoding (formatted address + lat/lng)
+- Attachment type/size limits
+- Input length bounds (title, description, notes)
+
+---
+
 ## 🧩 MCP Server (MongoDB) Integration
 
 Use this if you're connecting MongoDB to an MCP client (e.g., Cursor). The password below is URL‑encoded for safety.
