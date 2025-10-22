@@ -57,30 +57,30 @@ export default function Register() {
     <AuthLayout title="Create account" subtitle="Join the Caravan and start reporting or resolving issues.">
       <form onSubmit={onSubmit} className="space-y-4">
         {error && <p className="text-red-200 text-sm">{error}</p>}
-        <input className="w-full rounded-lg bg-white/30 text-white placeholder-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-white/60" placeholder="Name" value={name} onChange={(e)=>setName(e.target.value)} />
-        <input className="w-full rounded-lg bg-white/30 text-white placeholder-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-white/60" placeholder="Email" type="email" value={email} onChange={(e)=>setEmail(e.target.value)} />
-        <input className="w-full rounded-lg bg-white/30 text-white placeholder-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-white/60" placeholder="Password" type="password" value={password} onChange={(e)=>setPassword(e.target.value)} />
+        <input className="w-full rounded-lg bg-white/90 text-gray-900 placeholder-gray-500 px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Name" value={name} onChange={(e)=>setName(e.target.value)} />
+        <input className="w-full rounded-lg bg-white/90 text-gray-900 placeholder-gray-500 px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Email" type="email" value={email} onChange={(e)=>setEmail(e.target.value)} />
+        <input className="w-full rounded-lg bg-white/90 text-gray-900 placeholder-gray-500 px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Password" type="password" value={password} onChange={(e)=>setPassword(e.target.value)} />
         <div className="relative">
-          <input className="w-full rounded-lg bg-white/30 text-white placeholder-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-white/60" placeholder="Phone (optional)" value={phone} onChange={(e)=>setPhone(e.target.value)} />
+          <input className="w-full rounded-lg bg-white/90 text-gray-900 placeholder-gray-500 px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Phone (optional)" value={phone} onChange={(e)=>setPhone(e.target.value)} />
           {phone && (
             <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium ${phoneValidation.valid === true ? 'text-green-300' : phoneValidation.valid === false ? 'text-red-300' : 'text-white/60'}`}>
               {phoneValidation.msg}
             </span>
           )}
         </div>
-        <select className="w-full rounded-lg bg-white/30 text-white px-4 py-3 outline-none focus:ring-2 focus:ring-white/60" value={role} onChange={(e)=>setRole(e.target.value)}>
-          <option className="text-black" value="citizen">Citizen</option>
-          <option className="text-black" value="staff">Staff</option>
-          <option className="text-black" value="admin">Admin</option>
+        <select className="w-full rounded-lg bg-white/90 text-gray-900 px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500" value={role} onChange={(e)=>setRole(e.target.value)}>
+          <option value="citizen">Citizen</option>
+          <option value="staff">Staff</option>
+          <option value="admin">Admin</option>
         </select>
         {role === 'staff' && (
           <>
-            <select className="w-full rounded-lg bg-white/30 text-white px-4 py-3 outline-none focus:ring-2 focus:ring-white/60" value={departmentId} onChange={(e)=>setDepartmentId(e.target.value)}>
-              <option className="text-black" value="">Select Department</option>
-              {departments.map(d=><option className="text-black" key={d._id} value={d._id}>{d.name}</option>)}
+            <select className="w-full rounded-lg bg-white/90 text-gray-900 px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500" value={departmentId} onChange={(e)=>setDepartmentId(e.target.value)}>
+              <option value="">Select Department</option>
+              {departments.map(d=><option key={d._id} value={d._id}>{d.name}</option>)}
             </select>
-            <input className="w-full rounded-lg bg-white/30 text-white placeholder-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-white/60" placeholder="Title (e.g., Field Engineer)" value={title} onChange={(e)=>setTitle(e.target.value)} />
-            <input className="w-full rounded-lg bg-white/30 text-white placeholder-white/80 px-4 py-3 outline-none focus:ring-2 focus:ring-white/60" placeholder="Skills (comma-separated)" value={skills} onChange={(e)=>setSkills(e.target.value)} />
+            <input className="w-full rounded-lg bg-white/90 text-gray-900 placeholder-gray-500 px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Title (e.g., Field Engineer)" value={title} onChange={(e)=>setTitle(e.target.value)} />
+            <input className="w-full rounded-lg bg-white/90 text-gray-900 placeholder-gray-500 px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Skills (comma-separated)" value={skills} onChange={(e)=>setSkills(e.target.value)} />
           </>
         )}
         <button disabled={loading} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-lg font-medium disabled:opacity-50 transition">{loading? 'Creating...' : 'Create account'}</button>
