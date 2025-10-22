@@ -14,6 +14,10 @@ export default function Register() {
   const [departmentId, setDepartmentId] = useState('')
   const [title, setTitle] = useState('')
   const [skills, setSkills] = useState('')
+  const [workCity, setWorkCity] = useState('')
+  const [workZones, setWorkZones] = useState('')
+  const [contactPhone, setContactPhone] = useState('')
+  const [contactEmail, setContactEmail] = useState('')
   const [departments, setDepartments] = useState([])
   const [error, setError] = useState('')
   const navigate = useNavigate()
@@ -46,7 +50,16 @@ export default function Register() {
     if (phone) payload.phone = phone
     if (role === 'staff' && departmentId) {
       payload.departmentId = departmentId
-      payload.staff = { title, skills: skills.split(',').map(s=>s.trim()).filter(Boolean) }
+      payload.staff = {
+        title,
+        skills: skills.split(',').map(s=>s.trim()).filter(Boolean),
+        workArea: {
+          city: workCity,
+          zones: workZones.split(',').map(s=>s.trim()).filter(Boolean),
+        },
+        contactPhone,
+        contactEmail,
+      }
     }
     const res = await register(payload)
     if (res.ok) navigate('/')
@@ -81,6 +94,10 @@ export default function Register() {
             </select>
             <input className="w-full rounded-lg bg-white/90 text-gray-900 placeholder-gray-500 px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Title (e.g., Field Engineer)" value={title} onChange={(e)=>setTitle(e.target.value)} />
             <input className="w-full rounded-lg bg-white/90 text-gray-900 placeholder-gray-500 px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Skills (comma-separated)" value={skills} onChange={(e)=>setSkills(e.target.value)} />
+            <input className="w-full rounded-lg bg-white/90 text-gray-900 placeholder-gray-500 px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Work City/Area" value={workCity} onChange={(e)=>setWorkCity(e.target.value)} />
+            <input className="w-full rounded-lg bg-white/90 text-gray-900 placeholder-gray-500 px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Work Zones (comma-separated)" value={workZones} onChange={(e)=>setWorkZones(e.target.value)} />
+            <input className="w-full rounded-lg bg-white/90 text-gray-900 placeholder-gray-500 px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Contact Phone" value={contactPhone} onChange={(e)=>setContactPhone(e.target.value)} />
+            <input className="w-full rounded-lg bg-white/90 text-gray-900 placeholder-gray-500 px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Contact Email" value={contactEmail} onChange={(e)=>setContactEmail(e.target.value)} />
           </>
         )}
         <button disabled={loading} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-lg font-medium disabled:opacity-50 transition">{loading? 'Creating...' : 'Create account'}</button>

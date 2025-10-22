@@ -8,6 +8,7 @@ import authRoutes from './routes/authRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
 import departmentRoutes from './routes/departmentRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import reviewRoutes from './routes/reviewRoutes.js';
 
 const app = express();
 
@@ -70,6 +71,7 @@ app.use('/api/complaints', complaintRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/departments', departmentRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 const port = process.env.PORT || 5000;
 app.listen(port, () => console.log(`API listening on :${port}`));

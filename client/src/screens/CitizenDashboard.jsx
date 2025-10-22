@@ -58,8 +58,10 @@ export default function CitizenDashboard() {
               </thead>
               <tbody>
                 {list.map((it) => (
-                  <tr key={it._id} className="border-t">
-                    <td className="py-2">{it.title}</td>
+                  <tr key={it._id} className="border-t hover:bg-gray-50">
+                    <td className="py-2">
+                      <Link to={`/complaints/${it._id}`} className="text-emerald-700 hover:underline">{it.title}</Link>
+                    </td>
                     <td className="py-2">{it.category}</td>
                     <td className="py-2">{it.status}</td>
                     <td className="py-2">{new Date(it.createdAt).toLocaleString()}</td>

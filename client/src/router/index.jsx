@@ -7,6 +7,8 @@ import StaffDashboard from '../screens/StaffDashboard'
 import CitizenDashboard from '../screens/CitizenDashboard'
 import NewComplaint from '../screens/NewComplaint'
 import Departments from '../screens/Departments'
+import ComplaintDetail from '../screens/ComplaintDetail'
+import StaffProfile from '../screens/StaffProfile'
 import ProtectedRoute from '../auth/ProtectedRoute'
 import { useAuth } from '../auth/AuthContext'
 
@@ -42,6 +44,22 @@ const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <Departments />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/complaints/:id',
+    element: (
+      <ProtectedRoute>
+        <ComplaintDetail />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/staff/:id',
+    element: (
+      <ProtectedRoute>
+        <StaffProfile />
       </ProtectedRoute>
     ),
   }
