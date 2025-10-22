@@ -9,16 +9,25 @@ function computeSlaDeadline(hours) {
 
 export async function createComplaint(req, res) {
     try {
-        const { title, description, category, priority, location, attachments, reporter } = req.body;
+        const { title, description, category, priority, location, attachments, reporter, assignedDepartmentId } = req.body;
 
         if (!title || !description || !category) {
             return res.status(400).json({ message: 'title, description and category are required' });
         }
 
-        // Find department by category match
-        const department = await Department.findOne({ categoriesHandled: category }).lean();
+        // Use user-selected department if provided, otherwise auto-find by category
+        let deptId = assignedDepartmentId;
+        let slaHours = 72;
+        
+        if (assignedDepartmentId) {
+            const dept = await Department.findById(assignedDepartmentId).lean();
+            if (dept) slaHours = dept.slaPolicyHours || 72;
+        } else {
+            const department = await Department.findOne({ categoriesHandled: category }).lean();
+            deptId = department?._id;
+            slaHours = department?.slaPolicyHours || 72;
+        }
 
-        const slaHours = department?.slaPolicyHours || 72;
         const complaint = await Complaint.create({
             title,
             description,
@@ -28,7 +37,7 @@ export async function createComplaint(req, res) {
             attachments,
             createdBy: req.user?.id || null,
             reporterSnapshot: reporter, // {name, phone, email}
-            assignedDepartmentId: department?._id,
+            assignedDepartmentId: deptId,
             slaDeadline: computeSlaDeadline(slaHours),
             statusHistory: [
                 { from: null, to: 'OPEN', note: 'Complaint created', by: req.user?.id || null },
@@ -53,7 +62,7 @@ export async function getMyComplaints(req, res) {
 
 export async function getComplaintDetail(req, res) {
     try {
-        const c = await Complaint.findById(req.params.id).populate('assignedTo', 'name email').populate('assignedDepartmentId','name');
+        const c = await Complaint.findById(req.params.id).populate('assignedTo', 'name email').populate('assignedDepartmentId', 'name');
         if (!c) return res.status(404).json({ message: 'Not found' });
         return res.json({ complaint: c });
     } catch (err) {
