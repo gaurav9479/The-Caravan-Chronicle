@@ -6,6 +6,7 @@ import AdminDashboard from '../screens/AdminDashboard'
 import StaffDashboard from '../screens/StaffDashboard'
 import CitizenDashboard from '../screens/CitizenDashboard'
 import NewComplaint from '../screens/NewComplaint'
+import Departments from '../screens/Departments'
 import ProtectedRoute from '../auth/ProtectedRoute'
 import { useAuth } from '../auth/AuthContext'
 
@@ -35,6 +36,10 @@ const router = createBrowserRouter([
         <NewComplaint />
       </ProtectedRoute>
     ),
+  },
+  {
+    path: '/departments',
+    element: <Departments />,
   }
 ])
 

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import api from '../api/client'
 import KpiCard from '../components/KpiCard'
 import ProfileCard from '../components/ProfileCard'
@@ -29,7 +30,10 @@ export default function CitizenDashboard() {
   return (
     <div className="p-6 space-y-6">
       <ProfileCard />
-      <h1 className="text-2xl font-semibold">Citizen Dashboard</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Citizen Dashboard</h1>
+        <Link to="/departments" className="text-sm text-emerald-700 underline">View All Departments</Link>
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <KpiCard label="My Open" value={counts.OPEN} />
         <KpiCard label="In Progress" value={counts.IN_PROGRESS} />

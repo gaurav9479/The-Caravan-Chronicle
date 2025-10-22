@@ -18,7 +18,7 @@ export async function createComplaint(req, res) {
         // Use user-selected department if provided, otherwise auto-find by category
         let deptId = assignedDepartmentId;
         let slaHours = 72;
-        
+
         if (assignedDepartmentId) {
             const dept = await Department.findById(assignedDepartmentId).lean();
             if (dept) slaHours = dept.slaPolicyHours || 72;

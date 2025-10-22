@@ -3,7 +3,30 @@ import api from '../api/client'
 import { useNavigate } from 'react-router-dom'
 import MapPicker from '../components/MapPicker'
 
-const categories = ['Road Damage','Water Leakage','Garbage','Other']
+const categories = [
+  'Road Damage',
+  'Potholes',
+  'Street Lights Not Working',
+  'Traffic Signal Issue',
+  'Drainage Blocked',
+  'Water Leakage',
+  'No Water Supply',
+  'Water Quality Issue',
+  'Sewage Overflow',
+  'Garbage Not Collected',
+  'Illegal Dumping',
+  'Public Toilet Issue',
+  'Park Maintenance',
+  'Tree Fallen',
+  'Stray Animals',
+  'Noise Pollution',
+  'Air Pollution',
+  'Building Violation',
+  'Illegal Construction',
+  'Parking Issue',
+  'Encroachment',
+  'Other',
+]
 
 export default function NewComplaint() {
   const [title, setTitle] = useState('')
