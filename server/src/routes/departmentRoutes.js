@@ -1,10 +1,10 @@
 import { Router } from 'express';
-import { requireAuth } from '../middleware/auth.js';
 import Department from '../models/Department.js';
 
 const router = Router();
 
-router.get('/', requireAuth, async (_req, res) => {
+// Public endpoint for registration and complaint forms
+router.get('/', async (_req, res) => {
   try {
     const items = await Department.find({}).select('_id name code categoriesHandled');
     return res.json({ departments: items });
