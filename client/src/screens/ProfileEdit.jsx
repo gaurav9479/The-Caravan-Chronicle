@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../api/client'
 import { useAuth } from '../auth/AuthContext'
+import PhoneInput from 'react-phone-number-input'
+import { parsePhoneNumber } from 'libphonenumber-js'
+import 'react-phone-number-input/style.css'
 
 export default function ProfileEdit() {
   const { user, setUser } = useAuth()
@@ -20,6 +23,17 @@ export default function ProfileEdit() {
     shiftStart: '',
     shiftEnd: '',
   })
+
+  // Phone validation
+  const isValidPhone = (phone) => {
+    if (!phone) return null
+    try {
+      const phoneNumber = parsePhoneNumber(phone)
+      return phoneNumber ? phoneNumber.isValid() : false
+    } catch {
+      return false
+    }
+  }
 
   useEffect(() => {
     if (user) {
@@ -45,6 +59,19 @@ export default function ProfileEdit() {
     e.preventDefault()
     setLoading(true)
     setError('')
+
+    // Validate phone numbers if provided
+    if (formData.phone && !isValidPhone(formData.phone)) {
+      setError('Please enter a valid phone number')
+      setLoading(false)
+      return
+    }
+
+    if (user.role === 'staff' && formData.contactPhone && !isValidPhone(formData.contactPhone)) {
+      setError('Please enter a valid contact phone number')
+      setLoading(false)
+      return
+    }
 
     try {
       const { data } = await api.patch('/api/users/profile', formData)
@@ -94,12 +121,22 @@ export default function ProfileEdit() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Phone</label>
-            <input
-              className="w-full border rounded p-2"
+            <label className="block text-sm font-medium mb-1">Phone Number</label>
+            <PhoneInput
+              className="phone-input"
               value={formData.phone}
-              onChange={(e) => handleChange('phone', e.target.value)}
+              onChange={(value) => handleChange('phone', value)}
+              defaultCountry="IN"
+              placeholder="Enter phone number"
+              inputClassName="w-full border rounded p-2"
             />
+            {formData.phone && (
+              <div className="text-xs mt-1">
+                <span className={isValidPhone(formData.phone) ? 'text-green-600' : 'text-red-600'}>
+                  {isValidPhone(formData.phone) ? '✓ Valid phone number' : '✗ Invalid phone number'}
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -186,12 +223,21 @@ export default function ProfileEdit() {
             <h2 className="text-lg font-medium">Contact Information</h2>
             <div>
               <label className="block text-sm font-medium mb-1">Contact Phone</label>
-              <input
-                className="w-full border rounded p-2"
+              <PhoneInput
+                className="phone-input"
                 value={formData.contactPhone}
-                onChange={(e) => handleChange('contactPhone', e.target.value)}
+                onChange={(value) => handleChange('contactPhone', value)}
+                defaultCountry="IN"
                 placeholder="Phone for citizens to contact you"
+                inputClassName="w-full border rounded p-2"
               />
+              {formData.contactPhone && (
+                <div className="text-xs mt-1">
+                  <span className={isValidPhone(formData.contactPhone) ? 'text-green-600' : 'text-red-600'}>
+                    {isValidPhone(formData.contactPhone) ? '✓ Valid contact number' : '✗ Invalid contact number'}
+                  </span>
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Contact Email</label>

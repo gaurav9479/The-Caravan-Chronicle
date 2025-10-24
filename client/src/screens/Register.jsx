@@ -4,6 +4,9 @@ import { Link, useNavigate } from 'react-router-dom'
 import AuthLayout from '../components/AuthLayout'
 import api from '../api/client'
 import MapPicker from '../components/MapPicker'
+import PhoneInput from 'react-phone-number-input'
+import { parsePhoneNumber } from 'libphonenumber-js'
+import 'react-phone-number-input/style.css'
 
 export default function Register() {
   const { register, loading } = useAuth()
@@ -21,20 +24,31 @@ export default function Register() {
   const [workLng, setWorkLng] = useState(77.2090)
   const [contactPhone, setContactPhone] = useState('')
   const [contactEmail, setContactEmail] = useState('')
+  const [useSameContact, setUseSameContact] = useState(false)
   const [departments, setDepartments] = useState([])
   const [error, setError] = useState('')
   const navigate = useNavigate()
 
-  const validatePhone = (value) => {
-    if (!value) return { valid: null, msg: '' }
-    const cleaned = value.replace(/\D/g, '')
-    if (cleaned.length < 10) return { valid: false, msg: 'Min 10 digits' }
-    if (cleaned.length > 15) return { valid: false, msg: 'Max 15 digits' }
-    if (/[a-zA-Z]/.test(value)) return { valid: false, msg: 'Numbers only' }
-    return { valid: true, msg: 'Valid' }
+  // Phone validation using libphonenumber-js
+  const isValidPhone = (phone) => {
+    if (!phone) return null
+    try {
+      const phoneNumber = parsePhoneNumber(phone)
+      return phoneNumber ? phoneNumber.isValid() : false
+    } catch {
+      return false
+    }
   }
 
-  const phoneValidation = validatePhone(phone)
+  const formatPhone = (phone) => {
+    if (!phone) return ''
+    try {
+      const phoneNumber = parsePhoneNumber(phone)
+      return phoneNumber ? phoneNumber.formatInternational() : phone
+    } catch {
+      return phone
+    }
+  }
 
   useEffect(() => {
     if (role === 'staff') {
@@ -47,15 +61,44 @@ export default function Register() {
     }
   }, [role])
 
+  useEffect(() => {
+    if (useSameContact && role === 'staff') {
+      setContactPhone(phone)
+      setContactEmail(email)
+    }
+  }, [phone, email, useSameContact, role])
+
   const onSubmit = async (e) => {
     e.preventDefault()
-    const payload = { name, email, password, role }
-    if (phone) payload.phone = phone
+
+    // Validate required fields
+    if (!name || !email || !password) {
+      setError('Name, email, and password are required')
+      return
+    }
+
+    // Validate phone if provided
+    if (phone && !isValidPhone(phone)) {
+      setError('Please enter a valid phone number')
+      return
+    }
+
+    // Validate staff-specific requirements
     if (role === 'staff' && departmentId) {
       if (workLat == null || workLng == null || Number.isNaN(workLat) || Number.isNaN(workLng)) {
         setError('Please select your working area on the map or use your location')
         return
       }
+      if (!isValidPhone(contactPhone)) {
+        setError('Please enter a valid contact phone number')
+        return
+      }
+    }
+
+    const payload = { name, email, password, role }
+    if (phone) payload.phone = phone
+
+    if (role === 'staff' && departmentId) {
       payload.departmentId = departmentId
       payload.staff = {
         title,
@@ -69,6 +112,7 @@ export default function Register() {
         contactEmail,
       }
     }
+
     const res = await register(payload)
     if (res.ok) navigate('/')
     else setError(res.message || 'Registration failed')
@@ -81,12 +125,23 @@ export default function Register() {
         <input className="w-full rounded-lg bg-white/90 text-gray-900 placeholder-gray-500 px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Name" value={name} onChange={(e)=>setName(e.target.value)} />
         <input className="w-full rounded-lg bg-white/90 text-gray-900 placeholder-gray-500 px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Email" type="email" value={email} onChange={(e)=>setEmail(e.target.value)} />
         <input className="w-full rounded-lg bg-white/90 text-gray-900 placeholder-gray-500 px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Password" type="password" value={password} onChange={(e)=>setPassword(e.target.value)} />
-        <div className="relative">
-          <input className="w-full rounded-lg bg-white/90 text-gray-900 placeholder-gray-500 px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Phone (optional)" value={phone} onChange={(e)=>setPhone(e.target.value)} />
+        <div>
+          <label className="block text-sm font-medium mb-1">Phone Number (optional)</label>
+          <PhoneInput
+            className="phone-input"
+            value={phone}
+            onChange={setPhone}
+            defaultCountry="IN"
+            placeholder="Enter phone number"
+            inputClassName="w-full rounded-lg bg-white/90 text-gray-900 px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500"
+          />
           {phone && (
-            <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium ${phoneValidation.valid === true ? 'text-green-300' : phoneValidation.valid === false ? 'text-red-300' : 'text-white/60'}`}>
-              {phoneValidation.msg}
-            </span>
+            <div className="text-xs mt-1">
+              <span className={isValidPhone(phone) ? 'text-green-600' : 'text-red-600'}>
+                {isValidPhone(phone) ? '✓ Valid phone number' : '✗ Invalid phone number'}
+              </span>
+              {isValidPhone(phone) && <span className="text-fade ml-2">({formatPhone(phone)})</span>}
+            </div>
           )}
         </div>
         <select className="w-full rounded-lg bg-white/90 text-gray-900 px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500" value={role} onChange={(e)=>setRole(e.target.value)}>
@@ -135,8 +190,50 @@ export default function Register() {
                 onLocationChange={(lat, lng) => { setWorkLat(lat); setWorkLng(lng) }}
               />
             </div>
-            <input className="w-full rounded-lg bg-white/90 text-gray-900 placeholder-gray-500 px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Contact Phone" value={contactPhone} onChange={(e)=>setContactPhone(e.target.value)} />
-            <input className="w-full rounded-lg bg-white/90 text-gray-900 placeholder-gray-500 px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Contact Email" value={contactEmail} onChange={(e)=>setContactEmail(e.target.value)} />
+            <div className="flex items-center gap-2 mb-3">
+              <input
+                type="checkbox"
+                id="useSameContact"
+                checked={useSameContact}
+                onChange={(e) => setUseSameContact(e.target.checked)}
+                className="rounded"
+              />
+              <label htmlFor="useSameContact" className="text-sm font-medium">
+                Use same phone and email as above for contact
+              </label>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">Contact Phone <span className="text-red-500">*</span></label>
+              <PhoneInput
+                className="phone-input"
+                value={contactPhone}
+                onChange={setContactPhone}
+                defaultCountry="IN"
+                placeholder="Phone for citizens to contact you"
+                inputClassName="w-full rounded-lg bg-white/90 text-gray-900 px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500"
+                disabled={useSameContact}
+              />
+              {contactPhone && (
+                <div className="text-xs mt-1">
+                  <span className={isValidPhone(contactPhone) ? 'text-green-600' : 'text-red-600'}>
+                    {isValidPhone(contactPhone) ? '✓ Valid contact number' : '✗ Invalid contact number'}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">Contact Email</label>
+              <input
+                className="w-full rounded-lg bg-white/90 text-gray-900 placeholder-gray-500 px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500"
+                type="email"
+                value={contactEmail}
+                onChange={(e)=>setContactEmail(e.target.value)}
+                placeholder="Email for citizens to contact you"
+                disabled={useSameContact}
+              />
+            </div>
           </>
         )}
         <button disabled={loading} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-lg font-medium disabled:opacity-50 transition">{loading? 'Creating...' : 'Create account'}</button>

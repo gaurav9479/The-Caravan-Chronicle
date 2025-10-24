@@ -3,6 +3,9 @@ import api from '../api/client'
 import { useNavigate } from 'react-router-dom'
 import MapPicker from '../components/MapPicker'
 import StaffSelector from '../components/StaffSelector'
+import PhoneInput from 'react-phone-number-input'
+import { parsePhoneNumber } from 'libphonenumber-js'
+import 'react-phone-number-input/style.css'
 
 const categories = [
   'Road Damage',
@@ -39,9 +42,23 @@ export default function NewComplaint() {
   const [departments, setDepartments] = useState([])
   const [selectedDeptId, setSelectedDeptId] = useState('')
   const [selectedStaffId, setSelectedStaffId] = useState('')
+  const [reporterPhone, setReporterPhone] = useState('')
+  const [reporterName, setReporterName] = useState('')
+  const [reporterEmail, setReporterEmail] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
+
+  // Phone validation
+  const isValidPhone = (phone) => {
+    if (!phone) return null
+    try {
+      const phoneNumber = parsePhoneNumber(phone)
+      return phoneNumber ? phoneNumber.isValid() : false
+    } catch {
+      return false
+    }
+  }
 
   useEffect(() => {
     (async () => {
@@ -66,6 +83,28 @@ export default function NewComplaint() {
     e.preventDefault()
     setLoading(true)
     setError('')
+
+    // Validate required fields
+    if (!title || !description || !category) {
+      setError('Title, description, and category are required')
+      setLoading(false)
+      return
+    }
+
+    // Validate location
+    if (!lat || !lng || Number.isNaN(lat) || Number.isNaN(lng)) {
+      setError('Please select a location on the map or use your current location')
+      setLoading(false)
+      return
+    }
+
+    // Validate reporter phone if provided
+    if (reporterPhone && !isValidPhone(reporterPhone)) {
+      setError('Please enter a valid phone number')
+      setLoading(false)
+      return
+    }
+
     try {
       const payload = {
         title,
@@ -73,12 +112,23 @@ export default function NewComplaint() {
         category,
         priority,
         location: {
-          lat: lat ? Number(lat) : undefined,
-          lng: lng ? Number(lng) : undefined,
+          lat: Number(lat),
+          lng: Number(lng),
         },
       }
+
+      // Add reporter info if provided
+      if (reporterName || reporterPhone || reporterEmail) {
+        payload.reporter = {
+          name: reporterName,
+          phone: reporterPhone,
+          email: reporterEmail,
+        }
+      }
+
       if (selectedDeptId) payload.assignedDepartmentId = selectedDeptId
       if (selectedStaffId) payload.assignedStaffId = selectedStaffId
+
       await api.post('/api/complaints', payload)
       navigate('/')
     } catch (e) {
@@ -115,6 +165,28 @@ export default function NewComplaint() {
         </div>
         <div>
           <label className="block text-sm mb-1">Location (click on map or enter coordinates)</label>
+          <div className="mb-2 flex gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                if ('geolocation' in navigator) {
+                  navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                      setLat(pos.coords.latitude)
+                      setLng(pos.coords.longitude)
+                    },
+                    () => setError('Could not fetch your location, please allow permission or pick on map')
+                  )
+                } else {
+                  setError('Geolocation not supported in this browser')
+                }
+              }}
+              className="px-3 py-2 bg-emerald-100 text-emerald-700 rounded hover:bg-emerald-200 text-sm"
+            >
+              📍 Use my current location
+            </button>
+            <div className="text-xs text-fade self-center">Lat: {Number(lat).toFixed(5)} • Lng: {Number(lng).toFixed(5)}</div>
+          </div>
           <MapPicker lat={lat} lng={lng} onLocationChange={(newLat, newLng) => { setLat(newLat); setLng(newLng); }} />
           <div className="grid grid-cols-2 gap-2 mt-2">
             <input className="border rounded p-2 text-sm" placeholder="Latitude" value={lat} onChange={e=>setLat(Number(e.target.value))} />
@@ -132,7 +204,47 @@ export default function NewComplaint() {
             selectedStaffId={selectedStaffId}
           />
         </div>
-        <button disabled={loading} className="px-4 py-2 rounded bg-emerald-600 text-white disabled:opacity-50">{loading? 'Submitting...' : 'Submit'}</button>
+
+        <div className="bg-gray-50 rounded-lg p-4 space-y-4">
+          <h3 className="font-medium text-sm">Your Contact Information (Optional)</h3>
+          <p className="text-xs text-fade">Provide your contact details so staff can reach you for updates or clarification.</p>
+
+          <input
+            className="w-full border rounded p-2"
+            placeholder="Your Name"
+            value={reporterName}
+            onChange={(e)=>setReporterName(e.target.value)}
+          />
+
+          <div>
+            <label className="block text-sm mb-1">Your Phone Number</label>
+            <PhoneInput
+              className="phone-input"
+              value={reporterPhone}
+              onChange={setReporterPhone}
+              defaultCountry="IN"
+              placeholder="Phone for updates"
+              inputClassName="w-full border rounded p-2"
+            />
+            {reporterPhone && (
+              <div className="text-xs mt-1">
+                <span className={isValidPhone(reporterPhone) ? 'text-green-600' : 'text-red-600'}>
+                  {isValidPhone(reporterPhone) ? '✓ Valid phone number' : '✗ Invalid phone number'}
+                </span>
+              </div>
+            )}
+          </div>
+
+          <input
+            className="w-full border rounded p-2"
+            type="email"
+            placeholder="Your Email (for updates)"
+            value={reporterEmail}
+            onChange={(e)=>setReporterEmail(e.target.value)}
+          />
+        </div>
+
+        <button disabled={loading} className="px-4 py-2 rounded bg-emerald-600 text-white disabled:opacity-50">{loading? 'Submitting...' : 'Submit Complaint'}</button>
       </form>
     </div>
   )
