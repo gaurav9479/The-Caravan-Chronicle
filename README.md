@@ -93,6 +93,9 @@ You, appointed as the **Grounds Manager**, are responsible for developing a **gr
 8. **Advanced Filtering** — Filter complaints/reviews by status, dates, department, assignee across all views.
 9. **Location-Aware Assignment** — OLA/Uber-style staff selection based on proximity and availability.
 10. **Real-Time Staff Discovery** — Citizens see nearby available staff with ratings and estimated arrival times.
+11. **Robust Phone Validation** — International phone number validation with country codes and formatting.
+12. **Enhanced Profile Management** — Universal profile editing with role-aware fields and real-time validation.
+13. **Geolocation Integration** — "Use my current location" buttons with HTML5 geolocation API.
 
 ---
 
@@ -196,6 +199,7 @@ You, appointed as the **Grounds Manager**, are responsible for developing a **gr
  | `GET`   | `/api/departments`           | List all departments       | ✅ All         |
  | `GET`   | `/api/users`                 | List users (staff/admin)   | ✅ Staff/Admin |
 | `GET`   | `/api/users/:id`             | View user profile          | ✅ All         |
+| `PATCH` | `/api/users/profile`         | Update user profile        | ✅ All         |
 | `POST`  | `/api/reviews`               | Submit staff review        | ✅ Citizen     |
 | `GET`   | `/api/reviews/staff/:id`     | View staff reviews         | ✅ Staff/Admin |
 | `GET`   | `/api/staff/nearby`          | Find nearby staff by location | ✅ All         |
@@ -295,6 +299,31 @@ Open your browser at: `http://localhost:5173`
 - **JWT errors**: ensure `JWT_SECRET` is set and consistent across runs
 - **Email failures**: use app passwords or provider-specific SMTP creds; avoid plain Gmail passwords
 - **Port in use**: change `PORT` in `server/.env` or stop the conflicting process
+
+---
+
+## 📦 Dependencies
+
+### Backend
+- **express** — Web framework
+- **mongoose** — MongoDB ODM
+- **cors** — Cross-origin resource sharing
+- **dotenv** — Environment variables
+- **morgan** — HTTP request logger
+- **bcrypt** — Password hashing
+- **jsonwebtoken** — JWT token management
+- **multer** — File upload handling
+- **nodemailer** — Email sending
+
+### Frontend
+- **react** — UI library
+- **react-router-dom** — Client-side routing
+- **axios** — HTTP client
+- **leaflet** — Interactive maps
+- **react-leaflet** — React wrapper for Leaflet
+- **tailwindcss** — Utility-first CSS framework
+- **react-phone-number-input** — International phone number input with validation
+- **libphonenumber-js** — Robust phone number parsing and validation
 
 ---
 
@@ -445,10 +474,12 @@ Standards: Bearer auth header, validation (`zod`/`express-validator`), paginatio
 - **Filtering & Search**: Filter complaints/reviews by status, dates, department, assignee
 
 ### Staff Onboarding Data
-- **Work Area**: City, zones (comma-separated), location coordinates
-- **Contact**: Phone, email for citizen communication
+- **Work Area**: City, zones (comma-separated), precise location coordinates (map picker + geolocation)
+- **Contact**: Phone, email for citizen communication with "Same as above" option
 - **Skills**: Technical expertise (comma-separated)
 - **Department**: Auto-assigned or selected during registration
+- **Working Status**: Toggle for "working today" availability
+- **Shifts**: Start and end times for work schedule
 
 ### API Endpoints for Tracking
 
@@ -517,36 +548,76 @@ Standards: Bearer auth header, validation (`zod`/`express-validator`), paginatio
 - **Real-Time Updates**: Staff list refreshes as location changes
 - **Performance Optimization**: Sorted results with distance and rating weighting
 
+## 📱 Enhanced User Experience
+
+### Robust Phone Number Validation
+- **Pattern Recognition**: Uses `libphonenumber-js` for international phone number validation
+- **Visual Feedback**: Real-time validation with ✓/✗ indicators and formatted display
+- **Consistent Implementation**: PhoneInput components across all forms (register, profile, complaints)
+- **International Support**: Supports country codes and formatting for global usage
+
+### Citizen Complaint Features
+- **Current Location**: "Use my current location" button with HTML5 geolocation
+- **Precise Location Selection**: Interactive map picker with coordinate display
+- **Contact Information**: Optional reporter details (name, phone, email) for staff follow-up
+- **Location Validation**: Ensures valid coordinates before complaint submission
+
+### Staff Registration Enhancements
+- **Contact Information Options**:
+  - Regular phone/email (personal)
+  - Contact phone/email (for citizen communication)
+  - **"Same as above" checkbox** to copy personal info to contact fields
+- **Precise Work Area**: Map picker + geolocation for exact service area
+- **Work Schedule**: Shift start/end times and daily availability toggle
+- **Skills Management**: Comma-separated technical expertise
+
+### Profile Management
+- **Universal Access**: All users can edit their profiles via "Edit Profile" button
+- **Role-Aware Fields**: Different fields shown based on user role (citizen/staff/admin)
+- **Real-Time Validation**: Phone numbers, coordinates, and required fields validated
+- **Status Tracking**: Staff work availability shown across all dashboards
+
 ## 📝 Data Collection & Forms
 
 ### Onboarding Fields (by role)
 - **Citizen**
   - Name; Email (verify); Password
-  - Phone (optional, for OTP/alerts)
+  - Phone (optional, international validation with country codes)
   - Default location/area (optional)
   - Notification preference (email/SMS/push)
   - Accessibility needs (optional)
 - **Staff**
   - Name; Email (verify); Password
-  - Phone (work)
-  - Department (select)
+  - Phone (personal, international validation)
+  - Department (select from 47+ civic departments)
   - Title/role (e.g., Field Engineer)
-  - Skills/tags (e.g., paving, plumbing)
-  - Shift hours (start, end)
-  - Notification preference
+  - Skills/tags (comma-separated technical expertise)
+  - Work area (city, zones, precise coordinates via map/geolocation)
+  - Shift hours (start, end times)
+  - Contact phone/email (for citizen communication, with "Same as above" option)
+  - Working today toggle (availability status)
 - **Admin**
   - Name; Email (verify); Password
   - Scope (global or department-level)
   - Contact phone (optional)
 
 ### Complaint Submission (Citizen)
-- **Required**: Title, Description, Category, Location (map pin or searched address → store lat/lng and formatted address)
-- **Optional**: Priority (LOW/MEDIUM/HIGH), Photos/attachments, Landmark/notes, Consent to share anonymized data
+- **Required**: Title, Description, Category, Location (map pin, "Use my current location" button, or manual coordinates)
+- **Optional**:
+  - Priority (LOW/MEDIUM/HIGH)
+  - Photos/attachments
+  - Landmark/notes
+  - Contact information (name, phone, email for staff follow-up)
+  - Staff selection (OLA/Uber-style from nearby available staff)
+  - Consent to share anonymized data
 
 ### Assignment & Workflow (Staff/Admin)
-- Department and Assignee (staff list filtered by department)
-- Status update: `OPEN → IN_PROGRESS → RESOLVED`
-- Note on status change
+- **Location-Aware Assignment**: Automatic staff matching based on complaint location and staff work area
+- **Department Assignment**: Auto-assigned by category, with citizen override option
+- **Staff Selection**: Citizens can choose from nearby available staff (OLA/Uber-style)
+- **Status Workflow**: `OPEN → ASSIGNED → IN_PROGRESS → RESOLVED`
+- **Real-Time Updates**: Staff availability, location tracking, and status changes
+- **Contact Integration**: Staff contact info visible to citizens for direct communication
 - SLA override (admin only, optional)
 
 ### Analytics & Notifications
@@ -555,10 +626,12 @@ Standards: Bearer auth header, validation (`zod`/`express-validator`), paginatio
 - Escalation contacts (admin/staff leads)
 
 ### Data Quality & Validation
-- Email/phone verification (OTP/email link)
-- Address validation via geocoding (formatted address + lat/lng)
-- Attachment type/size limits
-- Input length bounds (title, description, notes)
+- **Phone Validation**: International phone number validation using `libphonenumber-js` with country code detection
+- **Email Verification**: Standard email format validation (OTP/email link optional for future)
+- **Location Validation**: Geocoding with precise coordinates (lat/lng) and address formatting
+- **Real-Time Validation**: Visual feedback (✓/✗) for phone numbers, coordinates, and required fields
+- **Attachment Handling**: Type/size limits for complaint photos and documents
+- **Input Bounds**: Length limits for title, description, notes, and other text fields
 
 ---
 
