@@ -68,9 +68,9 @@ export async function getComplaintsByStaff(req, res) {
         let filter = { assignedTo: staffId };
         if (status) filter.status = status;
         if (from || to) {
-          filter.createdAt = {};
-          if (from) filter.createdAt.$gte = new Date(from);
-          if (to) filter.createdAt.$lte = new Date(to);
+            filter.createdAt = {};
+            if (from) filter.createdAt.$gte = new Date(from);
+            if (to) filter.createdAt.$lte = new Date(to);
         }
 
         const list = await Complaint.find(filter).sort({ createdAt: -1 }).limit(50);
@@ -90,25 +90,25 @@ export async function getAllComplaints(req, res) {
         if (assignedTo) filter.assignedTo = assignedTo;
         if (category) filter.category = category;
         if (from || to) {
-          filter.createdAt = {};
-          if (from) filter.createdAt.$gte = new Date(from);
-          if (to) filter.createdAt.$lte = new Date(to);
+            filter.createdAt = {};
+            if (from) filter.createdAt.$gte = new Date(from);
+            if (to) filter.createdAt.$lte = new Date(to);
         }
 
         const skip = (parseInt(page) - 1) * parseInt(limit);
         const [complaints, total] = await Promise.all([
-          Complaint.find(filter)
-            .populate('assignedTo', 'name email')
-            .populate('assignedDepartmentId', 'name')
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(parseInt(limit)),
-          Complaint.countDocuments(filter)
+            Complaint.find(filter)
+                .populate('assignedTo', 'name email')
+                .populate('assignedDepartmentId', 'name')
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(parseInt(limit)),
+            Complaint.countDocuments(filter)
         ]);
 
         return res.json({
-          complaints,
-          pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / limit) }
+            complaints,
+            pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / limit) }
         });
     } catch (err) {
         return res.status(500).json({ message: 'Failed to fetch complaints', details: err.message });

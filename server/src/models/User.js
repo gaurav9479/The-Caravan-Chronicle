@@ -13,6 +13,7 @@ const UserSchema = new mongoose.Schema(
       skills: { type: [String], default: [] },
       shiftStart: { type: String }, // e.g., '09:00'
       shiftEnd: { type: String },   // e.g., '18:00'
+      isWorkingToday: { type: Boolean, default: true },
       workArea: {
         city: { type: String },
         zones: { type: [String], default: [] }, // e.g., ['Zone A', 'North District']

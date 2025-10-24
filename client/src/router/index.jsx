@@ -9,6 +9,7 @@ import NewComplaint from '../screens/NewComplaint'
 import Departments from '../screens/Departments'
 import ComplaintDetail from '../screens/ComplaintDetail'
 import StaffProfile from '../screens/StaffProfile'
+import ProfileEdit from '../screens/ProfileEdit'
 import ProtectedRoute from '../auth/ProtectedRoute'
 import { useAuth } from '../auth/AuthContext'
 
@@ -60,6 +61,14 @@ const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <StaffProfile />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/profile/edit',
+    element: (
+      <ProtectedRoute>
+        <ProfileEdit />
       </ProtectedRoute>
     ),
   }

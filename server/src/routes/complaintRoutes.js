@@ -6,11 +6,11 @@ const router = Router();
 
 // List complaints - admin/staff can see all with filters, citizens see only their own
 router.get('/', requireAuth, (req, res, next) => {
-  if (req.user.role === 'citizen') {
-    return getMyComplaints(req, res);
-  } else {
-    return getAllComplaints(req, res);
-  }
+    if (req.user.role === 'citizen') {
+        return getMyComplaints(req, res);
+    } else {
+        return getAllComplaints(req, res);
+    }
 });
 router.get('/mine', requireAuth, getMyComplaints);
 router.get('/staff/:staffId', requireAuth, getComplaintsByStaff);

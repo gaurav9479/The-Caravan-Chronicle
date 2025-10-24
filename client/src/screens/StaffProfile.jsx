@@ -44,6 +44,7 @@ export default function StaffProfile() {
         {staff.staff?.workArea?.city && <div><span className="font-medium">Work Area:</span> {staff.staff.workArea.city}</div>}
         {staff.staff?.workArea?.zones?.length > 0 && <div><span className="font-medium">Zones:</span> {staff.staff.workArea.zones.join(', ')}</div>}
         {staff.staff?.contactPhone && <div><span className="font-medium">Contact:</span> {staff.staff.contactPhone}</div>}
+        <div><span className="font-medium">Status:</span> <span className={staff.staff?.isWorkingToday ? 'text-green-600' : 'text-red-600'}>{staff.staff?.isWorkingToday ? '🟢 Working today' : '🔴 Not working today'}</span></div>
         <div><span className="font-medium">Rating:</span> ⭐ {staff.ratings?.average?.toFixed(1) || 0} ({staff.ratings?.count || 0} reviews)</div>
       </div>
 

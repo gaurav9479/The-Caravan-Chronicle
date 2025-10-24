@@ -64,7 +64,7 @@ export default function AdminDashboard() {
                   <th className="py-2">Email</th>
                   <th className="py-2">Department</th>
                   <th className="py-2">Work Area</th>
-                  <th className="py-2">Rating</th>
+                  <th className="py-2">Status & Rating</th>
                 </tr>
               </thead>
               <tbody>
@@ -76,7 +76,14 @@ export default function AdminDashboard() {
                     <td className="py-2">{s.email}</td>
                     <td className="py-2">{s.departmentId?.name || 'N/A'}</td>
                     <td className="py-2">{s.staff?.workArea?.city || 'N/A'} {s.staff?.workArea?.zones?.length > 0 && `(${s.staff.workArea.zones.join(', ')})`}</td>
-                    <td className="py-2">⭐ {s.ratings?.average?.toFixed(1) || 0} ({s.ratings?.count || 0})</td>
+                    <td className="py-2">
+                      <div className="flex items-center gap-2">
+                        <span className={s.staff?.isWorkingToday ? 'text-green-600' : 'text-red-600'}>
+                          {s.staff?.isWorkingToday ? '🟢' : '🔴'}
+                        </span>
+                        <span>⭐ {s.ratings?.average?.toFixed(1) || 0} ({s.ratings?.count || 0})</span>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
