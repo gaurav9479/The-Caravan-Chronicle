@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import api from '../api/client'
 import { useNavigate } from 'react-router-dom'
 import MapPicker from '../components/MapPicker'
+import StaffSelector from '../components/StaffSelector'
 
 const categories = [
   'Road Damage',
@@ -37,6 +38,7 @@ export default function NewComplaint() {
   const [lng, setLng] = useState(77.2090)
   const [departments, setDepartments] = useState([])
   const [selectedDeptId, setSelectedDeptId] = useState('')
+  const [selectedStaffId, setSelectedStaffId] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
@@ -76,6 +78,7 @@ export default function NewComplaint() {
         },
       }
       if (selectedDeptId) payload.assignedDepartmentId = selectedDeptId
+      if (selectedStaffId) payload.assignedStaffId = selectedStaffId
       await api.post('/api/complaints', payload)
       navigate('/')
     } catch (e) {
@@ -117,6 +120,17 @@ export default function NewComplaint() {
             <input className="border rounded p-2 text-sm" placeholder="Latitude" value={lat} onChange={e=>setLat(Number(e.target.value))} />
             <input className="border rounded p-2 text-sm" placeholder="Longitude" value={lng} onChange={e=>setLng(Number(e.target.value))} />
           </div>
+        </div>
+
+        <div>
+          <label className="block text-sm mb-1">Select Staff (Optional)</label>
+          <StaffSelector
+            lat={lat}
+            lng={lng}
+            category={category}
+            onStaffSelect={setSelectedStaffId}
+            selectedStaffId={selectedStaffId}
+          />
         </div>
         <button disabled={loading} className="px-4 py-2 rounded bg-emerald-600 text-white disabled:opacity-50">{loading? 'Submitting...' : 'Submit'}</button>
       </form>

@@ -9,7 +9,7 @@ function computeSlaDeadline(hours) {
 
 export async function createComplaint(req, res) {
     try {
-        const { title, description, category, priority, location, attachments, reporter, assignedDepartmentId } = req.body;
+        const { title, description, category, priority, location, attachments, reporter, assignedDepartmentId, assignedStaffId } = req.body;
 
         if (!title || !description || !category) {
             return res.status(400).json({ message: 'title, description and category are required' });
@@ -18,7 +18,7 @@ export async function createComplaint(req, res) {
         // Use user-selected department if provided, otherwise auto-find by category
         let deptId = assignedDepartmentId;
         let slaHours = 72;
-
+        
         if (assignedDepartmentId) {
             const dept = await Department.findById(assignedDepartmentId).lean();
             if (dept) slaHours = dept.slaPolicyHours || 72;
@@ -38,6 +38,7 @@ export async function createComplaint(req, res) {
             createdBy: req.user?.id || null,
             reporterSnapshot: reporter, // {name, phone, email}
             assignedDepartmentId: deptId,
+            assignedTo: assignedStaffId || null, // Will be set by location-based assignment
             slaDeadline: computeSlaDeadline(slaHours),
             statusHistory: [
                 { from: null, to: 'OPEN', note: 'Complaint created', by: req.user?.id || null },

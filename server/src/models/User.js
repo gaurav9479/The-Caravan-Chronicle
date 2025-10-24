@@ -8,24 +8,24 @@ const UserSchema = new mongoose.Schema(
         password: { type: String, required: true },
         role: { type: String, enum: ['citizen', 'staff', 'admin'], default: 'citizen' },
         departmentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Department' },
-    staff: {
-      title: { type: String },
-      skills: { type: [String], default: [] },
-      shiftStart: { type: String }, // e.g., '09:00'
-      shiftEnd: { type: String },   // e.g., '18:00'
-      isWorkingToday: { type: Boolean, default: true },
-      workArea: {
-        city: { type: String },
-        zones: { type: [String], default: [] }, // e.g., ['Zone A', 'North District']
-        location: { lat: Number, lng: Number },
-      },
-      contactPhone: { type: String },
-      contactEmail: { type: String },
-    },
-    ratings: {
-      average: { type: Number, default: 0 },
-      count: { type: Number, default: 0 },
-    },
+        staff: {
+            title: { type: String },
+            skills: { type: [String], default: [] },
+            shiftStart: { type: String }, // e.g., '09:00'
+            shiftEnd: { type: String },   // e.g., '18:00'
+            isWorkingToday: { type: Boolean, default: true },
+            workArea: {
+                city: { type: String },
+                zones: { type: [String], default: [] }, // e.g., ['Zone A', 'North District']
+                location: { lat: Number, lng: Number },
+            },
+            contactPhone: { type: String },
+            contactEmail: { type: String },
+        },
+        ratings: {
+            average: { type: Number, default: 0 },
+            count: { type: Number, default: 0 },
+        },
         profile: {
             avatarUrl: { type: String },
             phone: { type: String },
