@@ -14,7 +14,16 @@ export async function register(req, res) {
         const payload = { name, email, password, role };
         if (phone) payload.profile = { phone };
         if (departmentId) payload.departmentId = departmentId;
-        if (staff) payload.staff = staff;
+        if (staff) {
+            // If registering staff, require workArea.location coordinates
+            if (role === 'staff') {
+                const hasCoords = staff?.workArea?.location?.lat !== undefined && staff?.workArea?.location?.lng !== undefined;
+                if (!hasCoords) {
+                    return res.status(400).json({ message: 'Staff registration requires working area coordinates (lat,lng)' });
+                }
+            }
+            payload.staff = staff;
+        }
         const user = await User.create(payload);
         const token = signToken({ id: user._id, role: user.role, name: user.name });
         return res.status(201).json({

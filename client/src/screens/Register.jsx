@@ -3,6 +3,7 @@ import { useAuth } from '../auth/AuthContext'
 import { Link, useNavigate } from 'react-router-dom'
 import AuthLayout from '../components/AuthLayout'
 import api from '../api/client'
+import MapPicker from '../components/MapPicker'
 
 export default function Register() {
   const { register, loading } = useAuth()
@@ -16,6 +17,8 @@ export default function Register() {
   const [skills, setSkills] = useState('')
   const [workCity, setWorkCity] = useState('')
   const [workZones, setWorkZones] = useState('')
+  const [workLat, setWorkLat] = useState(28.6139)
+  const [workLng, setWorkLng] = useState(77.2090)
   const [contactPhone, setContactPhone] = useState('')
   const [contactEmail, setContactEmail] = useState('')
   const [departments, setDepartments] = useState([])
@@ -49,6 +52,10 @@ export default function Register() {
     const payload = { name, email, password, role }
     if (phone) payload.phone = phone
     if (role === 'staff' && departmentId) {
+      if (workLat == null || workLng == null || Number.isNaN(workLat) || Number.isNaN(workLng)) {
+        setError('Please select your working area on the map or use your location')
+        return
+      }
       payload.departmentId = departmentId
       payload.staff = {
         title,
@@ -56,6 +63,7 @@ export default function Register() {
         workArea: {
           city: workCity,
           zones: workZones.split(',').map(s=>s.trim()).filter(Boolean),
+          location: { lat: Number(workLat), lng: Number(workLng) },
         },
         contactPhone,
         contactEmail,
@@ -96,6 +104,37 @@ export default function Register() {
             <input className="w-full rounded-lg bg-white/90 text-gray-900 placeholder-gray-500 px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Skills (comma-separated)" value={skills} onChange={(e)=>setSkills(e.target.value)} />
             <input className="w-full rounded-lg bg-white/90 text-gray-900 placeholder-gray-500 px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Work City/Area" value={workCity} onChange={(e)=>setWorkCity(e.target.value)} />
             <input className="w-full rounded-lg bg-white/90 text-gray-900 placeholder-gray-500 px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Work Zones (comma-separated)" value={workZones} onChange={(e)=>setWorkZones(e.target.value)} />
+
+            <div>
+              <label className="block text-sm font-medium mb-1">Working Area Location</label>
+              <div className="mb-2 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if ('geolocation' in navigator) {
+                      navigator.geolocation.getCurrentPosition(
+                        (pos) => {
+                          setWorkLat(pos.coords.latitude)
+                          setWorkLng(pos.coords.longitude)
+                        },
+                        () => setError('Could not fetch your location, please allow permission or pick on map')
+                      )
+                    } else {
+                      setError('Geolocation not supported in this browser')
+                    }
+                  }}
+                  className="px-3 py-2 bg-emerald-100 text-emerald-700 rounded hover:bg-emerald-200 text-sm"
+                >
+                  Use my location
+                </button>
+                <div className="text-xs text-fade self-center">Lat: {Number(workLat).toFixed(5)} • Lng: {Number(workLng).toFixed(5)}</div>
+              </div>
+              <MapPicker
+                lat={workLat}
+                lng={workLng}
+                onLocationChange={(lat, lng) => { setWorkLat(lat); setWorkLng(lng) }}
+              />
+            </div>
             <input className="w-full rounded-lg bg-white/90 text-gray-900 placeholder-gray-500 px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Contact Phone" value={contactPhone} onChange={(e)=>setContactPhone(e.target.value)} />
             <input className="w-full rounded-lg bg-white/90 text-gray-900 placeholder-gray-500 px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Contact Email" value={contactEmail} onChange={(e)=>setContactEmail(e.target.value)} />
           </>
