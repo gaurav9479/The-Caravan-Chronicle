@@ -91,6 +91,8 @@ You, appointed as the **Grounds Manager**, are responsible for developing a **gr
 6. **Staff Performance Tracking** — Work area management, contact info, and performance analytics.
 7. **Rating & Review System** — Citizens rate staff (1-5 stars) after resolution with detailed feedback.
 8. **Advanced Filtering** — Filter complaints/reviews by status, dates, department, assignee across all views.
+9. **Location-Aware Assignment** — OLA/Uber-style staff selection based on proximity and availability.
+10. **Real-Time Staff Discovery** — Citizens see nearby available staff with ratings and estimated arrival times.
 
 ---
 
@@ -193,9 +195,11 @@ You, appointed as the **Grounds Manager**, are responsible for developing a **gr
  | `GET`   | `/api/analytics/categories`  | Category breakdown         | ✅ Admin       |
  | `GET`   | `/api/departments`           | List all departments       | ✅ All         |
  | `GET`   | `/api/users`                 | List users (staff/admin)   | ✅ Staff/Admin |
- | `GET`   | `/api/users/:id`             | View user profile          | ✅ All         |
- | `POST`  | `/api/reviews`               | Submit staff review        | ✅ Citizen     |
- | `GET`   | `/api/reviews/staff/:id`     | View staff reviews         | ✅ Staff/Admin |
+| `GET`   | `/api/users/:id`             | View user profile          | ✅ All         |
+| `POST`  | `/api/reviews`               | Submit staff review        | ✅ Citizen     |
+| `GET`   | `/api/reviews/staff/:id`     | View staff reviews         | ✅ Staff/Admin |
+| `GET`   | `/api/staff/nearby`          | Find nearby staff by location | ✅ All         |
+| `POST`  | `/api/staff/assign`          | Assign staff to complaint  | ✅ All         |
 
 ---
 
@@ -469,6 +473,49 @@ Standards: Bearer auth header, validation (`zod`/`express-validator`), paginatio
 - Detailed feedback: quality, timeliness, communication scores
 - Auto-calculates average rating for staff profiles
 - Reviews include complaint context and citizen anonymity
+
+## 🗺️ Location-Aware Staff Assignment
+
+### Features
+- **Geolocation-Based Matching**: Automatically find nearby staff using Haversine distance formula
+- **OLA/Uber-Style Selection**: Citizens can see and select from available staff in real-time
+- **Smart Filtering**: Only shows staff who are working today and within radius
+- **Performance-Based Sorting**: Staff sorted by rating (highest first) then distance (closest first)
+- **Real-Time Updates**: Staff list updates as citizen moves location on map
+
+### How It Works
+1. **Location Selection**: Citizen picks complaint location on interactive map
+2. **Staff Discovery**: System finds staff within 15km radius handling that category
+3. **Smart Filtering**: Only shows staff who are:
+   - Working today (`isWorkingToday: true`)
+   - From relevant department
+   - Have location coordinates
+4. **Staff Selection**: Citizen sees staff cards with:
+   - Name, title, and avatar
+   - Star rating and review count
+   - Distance from complaint location
+   - Estimated arrival time (~2 min/km)
+   - Skills and contact information
+   - Work status indicator (🟢/🔴)
+5. **Assignment**: Selected staff gets assigned and notified
+
+### API Endpoints
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| `GET` | `/api/staff/nearby?lat&lng&category&radius` | Find nearby staff for location and category | ✅ All |
+| `POST` | `/api/staff/assign` | Assign selected staff to complaint | ✅ All |
+
+### Frontend Components
+- **StaffSelector**: Real-time staff list with OLA/Uber-style cards
+- **MapPicker**: Interactive location selection with staff updates
+- **Staff Cards**: Display rating, distance, skills, contact info, and availability
+
+### Technical Implementation
+- **Haversine Formula**: Accurate distance calculation between coordinates
+- **MongoDB Queries**: Efficient filtering by department, availability, and location
+- **Real-Time Updates**: Staff list refreshes as location changes
+- **Performance Optimization**: Sorted results with distance and rating weighting
 
 ## 📝 Data Collection & Forms
 
