@@ -644,14 +644,14 @@ Raw password: `Gaurav@2005` → URL‑encoded: `Gaurav%402005`
 
 ### Connection string (read‑write)
 ```text
-mongodb+srv://gauravsprajapati:Gaurav%402005@caravanchroniclecluster.xu5j6lk.mongodb.net/caravan_chronicle
+mongodb+srv://gauravspr5@caravanchroniclecluster.xu5j6lk.mongodb.net/caravan_chronicle
 ```
 
 ### Start MCP server (read‑write)
 Run in your terminal (omit `--readOnly` for write access):
 ```bash
 npx -y mongodb-mcp-server \
-  --connectionString "mongodb+srv://gauravsprajapati:Gaurav%402005@caravanchroniclecluster.xu5j6lk.mongodb.net/caravan_chronicle"
+  --connectionString "mongodb+@caravanchroniclecluster.xu5j6lk.mongodb.net/caravan_chronicle"
 ```
 
 ### Optional MCP JSON config
@@ -664,7 +664,7 @@ npx -y mongodb-mcp-server \
         "-y",
         "mongodb-mcp-server",
         "--connectionString",
-        "mongodb+srv://gauravsprajapati:Gaurav%402005@caravanchroniclecluster.xu5j6lk.mongodb.net/caravan_chronicle"
+        "mongodb+srv://gauravs:caravanchroniclecluster.xu5j6lk.mongodb.net/caravan_chronicle"
       ]
     }
   }
@@ -674,5 +674,5 @@ npx -y mongodb-mcp-server \
 ### Backend `.env` example
 Update `server/.env` to use the same DB (read‑write):
 ```env
-MONGO_URI=mongodb+srv://gauravsprajapati:Gaurav%402005@caravanchroniclecluster.xu5j6lk.mongodb.net/caravan_chronicle
+MONGO_URI=mongodb+srv://gauravsp@caravanchroniclecluster.xu5j6lk.mongodb.net/caravan_chronicle
 ```
