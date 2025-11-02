@@ -5,8 +5,33 @@ import AuthLayout from '../components/AuthLayout'
 import api from '../api/client'
 import MapPicker from '../components/MapPicker'
 import PhoneInput from 'react-phone-number-input'
-import { parsePhoneNumber } from 'libphonenumber-js'
+import { parsePhoneNumber } from 'libphonenumber-js';
 import 'react-phone-number-input/style.css'
+
+const val = [
+  'Road Damage',
+  'Potholes',
+  'Street Lights Not Working',
+  'Traffic Signal Issue',
+  'Drainage Blocked',
+  'Water Leakage',
+  'No Water Supply',
+  'Water Quality Issue',
+  'Sewage Overflow',
+  'Garbage Not Collected',
+  'Illegal Dumping',
+  'Public Toilet Issue',
+  'Park Maintenance',
+  'Tree Fallen',
+  'Stray Animals',
+  'Noise Pollution',
+  'Air Pollution',
+  'Building Violation',
+  'Illegal Construction',
+  'Parking Issue',
+  'Encroachment',
+  'Other',
+]
 
 export default function Register() {
   const { register, loading } = useAuth()
@@ -78,10 +103,10 @@ export default function Register() {
     }
 
     // Validate phone if provided
-    if (phone && !isValidPhone(phone)) {
-      setError('Please enter a valid phone number')
-      return
-    }
+    // if (phone && !isValidPhone(phone)) {
+    //   setError('Please enter a valid phone number')
+    //   return
+    // }
 
     // Validate staff-specific requirements
     if (role === 'staff' && departmentId) {
