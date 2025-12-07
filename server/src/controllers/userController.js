@@ -1,4 +1,5 @@
 import User from '../models/User.js';
+import client from '../utils/redis.js';
 
 export async function listUsers(req, res) {
     try {
@@ -15,8 +16,21 @@ export async function listUsers(req, res) {
 
 export async function getUserById(req, res) {
     try {
-        const user = await User.findById(req.params.id).select('-password').populate('departmentId', 'name code');
+        const { id } = req.params;
+
+        // Check cache first
+        const cached = await client.get(`user:${id}`);
+        if (cached) {
+            return res.status(200).json(JSON.parse(cached));
+        }
+
+        // Fetch from DB otherwise
+        const user = await User.findById(id).select('-password').populate('departmentId', 'name code');
         if (!user) return res.status(404).json({ message: 'User not found' });
+
+        // Cache for 15 minutes (900 seconds)
+        await client.set(`user:${id}`, JSON.stringify({ user }), { EX: 900 });
+
         return res.json({ user });
     } catch (e) {
         return res.status(500).json({ message: 'Failed to fetch user' });
@@ -42,6 +56,9 @@ export async function updateProfile(req, res) {
 
         const user = await User.findByIdAndUpdate(userId, updateData, { new: true }).select('-password').populate('departmentId', 'name code');
         if (!user) return res.status(404).json({ message: 'User not found' });
+
+        // Invalidate cache for this user
+        await client.del(`user:${userId}`);
 
         return res.json({ user, message: 'Profile updated successfully' });
     } catch (e) {
