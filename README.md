@@ -661,7 +661,7 @@ Standards: Bearer auth header, validation (`zod`/`express-validator`), paginatio
 - **UX**: forms validation, toasts, skeletons, pagination, debounced search
 
 ### Environments & Config
-- `server/.env`: PORT, MONGO_URI, JWT_SECRET, EMAIL_USER, EMAIL_PASS
+- `server/.env`: PORT, MONGO_URI, JWT_SECRET, REDIS_URL, EMAIL_USER, EMAIL_PASS
 - `client/.env`: VITE_API_BASE_URL
 - Build/Run: Backend `npm run dev`, Frontend `npm run dev`
 - MCP: optional `mongodb-mcp-server` for DB exploration (read/write)
@@ -759,6 +759,36 @@ Standards: Bearer auth header, validation (`zod`/`express-validator`), paginatio
 |--------|----------|-------------|------|
 | `GET` | `/api/staff/nearby?lat&lng&category&radius` | Find nearby staff for location and category | ✅ All |
 | `POST` | `/api/staff/assign` | Assign selected staff to complaint | ✅ All |
+
+---
+
+## ⚡ Redis Caching Layer
+
+The application uses Redis for performance optimization with strategic caching:
+
+### **Cache Strategy**
+
+| Route | Cache Key | TTL | Reason |
+|-------|-----------|-----|--------|
+| `GET /api/departments` | `departments:list` | 1 hour | Departments change infrequently |
+| `GET /api/users/:id` | `user:${id}` | 15 min | User profiles accessed often |
+| `GET /api/staff/nearby` | `staff:nearby:${lat}:${lng}:${category}:${radius}` | 5 min | Staff availability changes frequently |
+| `GET /api/analytics/summary` | `analytics:summary` | 2 min | Admin dashboard updates |
+| `GET /api/analytics/categories` | `analytics:categories` | 5 min | Category stats |
+| `GET /api/analytics/heatmap` | `analytics:heatmap` | 10 min | Location data changes less frequently |
+
+### **Cache Invalidation**
+
+- **User profile updates**: Cache cleared on profile changes
+- **Staff assignments**: Nearby staff cache cleared when staff are assigned
+- **Department changes**: Would require manual cache clearing (rare)
+
+### **Redis Configuration**
+
+Add to `server/.env`:
+```env
+REDIS_URL=redis://127.0.0.1:6379
+```
 
 ### Frontend Components
 - **StaffSelector**: Real-time staff list with OLA/Uber-style cards
