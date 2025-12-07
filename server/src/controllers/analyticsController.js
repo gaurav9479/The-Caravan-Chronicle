@@ -10,9 +10,9 @@ export async function getSummary(req, res) {
             Complaint.countDocuments({ slaDeadline: { $ne: null, $lt: new Date() }, status: { $in: ['OPEN', 'IN_PROGRESS'] } }),
         ]);
         const byStatus = Object.fromEntries(byStatusAgg.map(s => [s._id, s.count]));
-        return res.json({ total, byStatus, overdue });
+        return { total, byStatus, overdue };
     } catch (e) {
-        return res.status(500).json({ message: 'Failed to fetch summary', details: e.message });
+        throw e; // Let the route handler catch this
     }
 }
 
@@ -22,9 +22,9 @@ export async function getCategories(req, res) {
             { $group: { _id: '$category', count: { $sum: 1 } } },
             { $sort: { count: -1 } },
         ]);
-        return res.json({ categories: data });
+        return { categories: data };
     } catch (e) {
-        return res.status(500).json({ message: 'Failed to fetch categories', details: e.message });
+        throw e; // Let the route handler catch this
     }
 }
 
@@ -34,9 +34,9 @@ export async function getHeatmap(req, res) {
             { $match: { 'location.lat': { $ne: null }, 'location.lng': { $ne: null } } },
             { $project: { lat: '$location.lat', lng: '$location.lng' } },
         ]);
-        return res.json({ points });
+        return { points };
     } catch (e) {
-        return res.status(500).json({ message: 'Failed to fetch heatmap', details: e.message });
+        throw e; // Let the route handler catch this
     }
 }
 
