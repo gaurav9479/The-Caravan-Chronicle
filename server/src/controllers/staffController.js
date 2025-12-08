@@ -1,5 +1,6 @@
 import User from '../models/User.js';
 import Department from '../models/Department.js';
+import client from '../utils/redis.js';
 import Complaint from '../models/Complaint.js';
 
 // Haversine formula to calculate distance between two coordinates
@@ -21,6 +22,15 @@ export async function getNearbyStaff(req, res) {
 
         if (!lat || !lng) {
             return res.status(400).json({ message: 'Latitude and longitude are required' });
+        }
+
+        // Create cache key based on request parameters
+        const cacheKey = `staff:nearby:${lat}:${lng}:${category}:${radius}`;
+
+        // Check cache first (5 minutes for staff availability)
+        const cached = await client.get(cacheKey);
+        if (cached) {
+            return res.status(200).json(JSON.parse(cached));
         }
 
         // Find department that handles this category
@@ -62,12 +72,17 @@ export async function getNearbyStaff(req, res) {
                 return a.distance - b.distance;
             });
 
-        return res.json({
+        const result = {
             staff: nearbyStaff,
             department: department.name,
             totalFound: nearbyStaff.length,
             searchRadius: parseFloat(radius)
-        });
+        };
+
+        // Cache for 5 minutes (300 seconds)
+        await client.set(cacheKey, JSON.stringify(result), { EX: 300 });
+
+        return res.json(result);
     } catch (err) {
         console.error('getNearbyStaff error', err);
         return res.status(500).json({ message: 'Failed to find nearby staff', details: err.message });
@@ -102,6 +117,13 @@ export async function assignStaffToComplaint(req, res) {
 
         if (!complaint) {
             return res.status(404).json({ message: 'Complaint not found' });
+        }
+
+        // Invalidate staff nearby cache for this staff member (since they're now assigned)
+        // This ensures the next nearby search reflects the updated availability
+        const keys = await client.keys('staff:nearby:*');
+        for (const key of keys) {
+            await client.del(key);
         }
 
         return res.json({
